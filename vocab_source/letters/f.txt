@@ -1884,14 +1884,10 @@ fazendeiros
 fazes
 fazing
 fbi
-fcc
 fchar
 fcomp
 fconv
 fconvert
-fcp
-fcs
-fcy
 fda
 fdname
 fdnames
@@ -3373,7 +3369,6 @@ fezziwig
 fezzy
 ffa
 ffestiniog
-fgn
 fgrid
 fhrer
 fi
@@ -5935,11 +5930,8 @@ flayers
 flayflint
 flaying
 flays
-flb
 flche
 flchette
-fld
-fldxt
 flea
 fleabag
 fleabags
@@ -6407,7 +6399,6 @@ flivvers
 flix
 flixes
 flixweed
-fll
 flnerie
 flneur
 flneuse
@@ -6873,7 +6864,6 @@ flows
 flowstone
 floyd
 floyt
-flp
 flrie
 flu
 fluate
@@ -7307,7 +7297,6 @@ fluxure
 fluxweed
 fluyt
 fluyts
-fly
 flyability
 flyable
 flyaway
@@ -7329,8 +7318,6 @@ flybook
 flybooks
 flyboy
 flybrush
-flyby
-flybys
 flycaster
 flycatcher
 flycatchers
@@ -7351,7 +7338,6 @@ flymen
 flymo
 flymos
 flyness
-flynn
 flyoff
 flyover
 flyovers
@@ -7369,7 +7355,6 @@ flypitchers
 flypitches
 flyposting
 flyproof
-flysch
 flysches
 flyspeck
 flyspecked
@@ -7398,9 +7383,9 @@ flywheels
 flywinch
 flywire
 flywort
-fmt
 fname
 fnese
+fo
 foal
 foaled
 foalfoot
@@ -10136,9 +10121,6 @@ foziness
 fozinesses
 fozy
 fplot
-fpm
-fps
-fpsps
 fra
 frab
 frabbit
@@ -11679,10 +11661,8 @@ frozen
 frozenhearted
 frozenly
 frozenness
-frs
 frsiket
 frsikets
-frt
 frubbish
 fruchtschiefer
 fructed
@@ -11866,8 +11846,6 @@ frutilla
 frutti
 fruttis
 fruz
-frwy
-fry
 fryer
 fryers
 frying
@@ -11876,11 +11854,8 @@ frypan
 frypans
 fsiest
 fstore
-fth
-fthm
-ftncmd
 ftnerr
-ftp
+fu
 fuage
 fub
 fubbed
@@ -13008,7 +12983,6 @@ fuzzing
 fuzzle
 fuzztail
 fuzzy
-fwd
 fwelling
 fyce
 fyces
@@ -13022,9 +12996,6 @@ fylgjur
 fylingdale
 fylker
 fynbos
-fyrd
-fyrds
 fyrdung
-fys
 fytte
 fyttes

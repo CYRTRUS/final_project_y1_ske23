@@ -5172,7 +5172,6 @@ passpenny
 passport
 passportless
 passports
-passsaging
 passu
 passulate
 passulation
@@ -5232,7 +5231,6 @@ pasteurizer
 pasteurizers
 pasteurizes
 pasteurizing
-pasticcci
 pasticci
 pasticcio
 pasticcios
@@ -5776,7 +5774,6 @@ patronate
 patrondom
 patroness
 patronesses
-patronessship
 patronisable
 patronise
 patronised
@@ -6227,21 +6224,11 @@ pazaree
 pazazz
 pazend
 pazzazz
-pbx
 pbxes
-pcf
 pci
-pcm
-pcs
-pct
 pda
 pdas
-pdf
-pdl
-pdn
-pdq
 pdsa
-pdt
 pe
 pea
 peaberries
@@ -6684,7 +6671,6 @@ pecuniary
 pecuniosity
 pecunious
 pecuniously
-pecuniousnesss
 ped
 peda
 pedage
@@ -11106,23 +11092,16 @@ pezizoid
 pezograph
 pezophaps
 pfaffian
-pfc
-pfd
 pfeffernuss
 pfeifferella
 pfennig
 pfennige
 pfennigs
-pfg
 pflag
 pforzheim
 pfui
 pfund
 pfunde
-pfx
-pgntt
-pgnttrp
-pgp
 phaca
 phacelia
 phacelias
@@ -11667,7 +11646,6 @@ phasotropy
 phat
 phatic
 phatically
-phd
 pheal
 phearse
 pheasant
@@ -13373,10 +13351,6 @@ photozincotypy
 phots
 photuria
 phousdar
-php
-phpbb
-phpht
-phr
 phractamphibia
 phragma
 phragmidium
@@ -13537,7 +13511,6 @@ phrynidae
 phrynin
 phrynoid
 phrynosoma
-pht
 phtalic
 phthalacene
 phthalan
@@ -13807,7 +13780,6 @@ phymatoid
 phymatorhysin
 phymatosis
 phymosia
-phys
 physa
 physagogue
 physalia
@@ -14161,7 +14133,6 @@ phytozoa
 phytozoan
 phytozoaria
 phytozoon
-phytyl
 pi
 pia
 piaba
@@ -16519,11 +16490,6 @@ pizzicato
 pizzicatos
 pizzle
 pizzles
-pkg
-pkgs
-pks
-pkt
-pkwy
 placability
 placabilty
 placable
@@ -17681,7 +17647,6 @@ plaza
 plazas
 plazolite
 plbroch
-plc
 plea
 pleach
 pleached
@@ -18190,7 +18155,6 @@ plexure
 plexures
 plexus
 plexuses
-plf
 pli
 pliability
 pliable
@@ -18887,7 +18851,6 @@ pluvioscopic
 pluviose
 pluviosity
 pluvious
-ply
 plyboard
 plyer
 plyers
@@ -18903,11 +18866,7 @@ plynlymmon
 plyscore
 plywood
 plywoods
-pmc
 pmid
-pmk
-pmsg
-pmt
 pnce
 pneodynamics
 pneograph
@@ -19067,8 +19026,7 @@ pneumotyphoid
 pneumotyphus
 pnigerophobia
 pnigophobia
-pnxt
-pnyx
+po
 poa
 poaceae
 poaceous
@@ -23656,17 +23614,7 @@ pozzuolana
 pozzuolanic
 pozzy
 ppa
-ppb
-ppc
-ppd
-pph
 ppi
-ppl
-ppm
-ppr
-pps
-ppt
-pptn
 praam
 praams
 prabble
@@ -29101,7 +29049,6 @@ prezygapophysis
 prezygomatic
 prezzie
 prezzies
-prf
 pria
 priacanthid
 priacanthidae
@@ -29745,7 +29692,6 @@ prizeworthy
 prizing
 prizren
 prlate
-prn
 pro
 proa
 proabolition
@@ -33293,8 +33239,6 @@ prozoning
 prozygapophysis
 prozymite
 prozymites
-prp
-prs
 prude
 prudelike
 prudely
@@ -33408,7 +33352,6 @@ prutah
 prutenic
 prutot
 prutoth
-pry
 pryer
 pryers
 prying
@@ -33417,7 +33360,6 @@ pryingness
 pryings
 pryler
 pryproof
-prys
 pryse
 prysed
 pryses
@@ -33504,7 +33446,6 @@ psammotherapy
 psammous
 psarolite
 psaronius
-psbr
 pschent
 pschents
 psec
@@ -34216,7 +34157,6 @@ pseudozoea
 pseudozoogloeal
 pseudozoological
 pseuds
-psf
 psha
 pshav
 pshaw
@@ -34319,15 +34259,8 @@ psorospermiform
 psorospermosis
 psorous
 psovie
-psp
 pssimistical
-psst
-pssts
-pst
-psts
 psuedo
-psw
-psych
 psychagogic
 psychagogos
 psychagogue
@@ -34621,7 +34554,6 @@ psychrophobia
 psychrophore
 psychrophyte
 psychrotherapies
-psychs
 psychurgy
 psycter
 psykter
@@ -34796,7 +34728,6 @@ pterylological
 pterylology
 pterylosis
 pteryrygia
-ptg
 ptilichthyidae
 ptiliidae
 ptilimnium
@@ -34833,11 +34764,6 @@ ptomatropine
 ptoses
 ptosis
 ptotic
-ptp
-pts
-ptt
-ptts
-pty
 ptyalagogic
 ptyalagogue
 ptyalagogues
@@ -34868,6 +34794,7 @@ ptychopterygium
 ptychosperma
 ptysmagogue
 ptyxis
+pu
 pua
 puan
 pub
@@ -36553,12 +36480,8 @@ puzzlingness
 puzzlings
 puzzolan
 puzzolana
-pvc
-pvt
 pwca
 pwllheli
-pwr
-pwt
 pya
 pyaemia
 pyaemias
@@ -36664,7 +36587,6 @@ pygmalionism
 pygmean
 pygmies
 pygmoid
-pygmy
 pygmydom
 pygmyhood
 pygmyish
@@ -36732,7 +36654,6 @@ pylorous
 pylorouses
 pylorus
 pyloruses
-pym
 pynchon
 pynot
 pynung
@@ -36801,7 +36722,6 @@ pyots
 pyoureter
 pyovesiculosis
 pyoxanthose
-pyr
 pyracanth
 pyracantha
 pyracanthas
@@ -37255,7 +37175,6 @@ pyrrophyllin
 pyrroporphyrin
 pyrrotriazole
 pyrroyl
-pyrryl
 pyrrylene
 pyrula
 pyrularia
@@ -37324,7 +37243,6 @@ pythons
 pyuria
 pyurias
 pyvuril
-pyx
 pyxed
 pyxes
 pyxidanthera

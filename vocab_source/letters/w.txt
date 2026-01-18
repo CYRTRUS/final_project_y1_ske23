@@ -1,3 +1,4 @@
+wa
 waac
 waaf
 waafs
@@ -615,7 +616,6 @@ wallings
 wallington
 wallis
 wallise
-wallless
 wallman
 walloch
 wallon
@@ -3326,7 +3326,6 @@ when
 whenabouts
 whenas
 whence
-whenceeer
 whenceforth
 whenceforward
 whences
@@ -3432,7 +3431,6 @@ wheyness
 wheys
 wheyworm
 wheywormed
-whf
 whiba
 which
 whichever
@@ -4201,8 +4199,6 @@ whosoever
 whosome
 whosomever
 whosumdever
-whr
-whs
 whse
 whsle
 whud
@@ -4230,7 +4226,6 @@ whuther
 whutter
 whuttering
 whuz
-why
 whydah
 whydahs
 whyever
@@ -4238,7 +4233,7 @@ whyfor
 whymper
 whyness
 whyo
-whys
+wi
 wibble
 wicca
 wiccan
@@ -5688,8 +5683,6 @@ wizier
 wiziers
 wizzen
 wizzens
-wjc
-wkly
 wlatful
 wlatsome
 wlecche
@@ -5698,8 +5691,6 @@ wlity
 wloka
 wlonkhede
 wma
-wmk
-wnw
 wo
 woa
 woad
@@ -6815,7 +6806,6 @@ wowwows
 woy
 woyaway
 wozzeck
-wpm
 wrabbe
 wrabill
 wrac
@@ -7119,8 +7109,6 @@ writter
 wrive
 wrixle
 wrizzled
-wrns
-wrnt
 wro
 wrocht
 wroke
@@ -7176,14 +7164,11 @@ wrought
 wrox
 wrung
 wrungness
-wrvs
-wry
 wrybill
 wrybills
 wryer
 wryest
 wrying
-wryly
 wrymouth
 wrymouths
 wryneck
@@ -7192,8 +7177,8 @@ wrynecks
 wryness
 wrynesses
 wrytail
-wsw
 wto
+wu
 wuchereria
 wud
 wudded
@@ -7278,7 +7263,6 @@ wyandot
 wyandotte
 wyandottes
 wyatt
-wych
 wyches
 wyclif
 wycliffe
@@ -7294,7 +7278,6 @@ wyde
 wye
 wyes
 wyethia
-wyf
 wyke
 wykeham
 wykehamical
@@ -7308,25 +7291,17 @@ wyling
 wyman
 wymondham
 wymote
-wyn
-wynd
 wyndham
-wynds
 wyne
 wynkernel
-wynn
 wynne
-wynns
 wynris
-wyns
 wyoming
 wyomingite
 wype
 wyrock
 wysiwyg
 wyson
-wyss
-wysty
 wyte
 wyted
 wytes

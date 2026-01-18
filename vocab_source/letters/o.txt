@@ -101,6 +101,7 @@ oats
 oatseed
 oaty
 oaves
+ob
 oba
 obadiah
 obambulate
@@ -861,6 +862,7 @@ obvolution
 obvolutive
 obvolve
 obvolvent
+oc
 oca
 ocarina
 ocarinas
@@ -2058,6 +2060,7 @@ oftness
 ofttime
 ofttimes
 oftwhiles
+og
 ogaden
 ogaire
 ogallala
@@ -2263,6 +2266,7 @@ oiticicas
 ojibwa
 ojibwas
 ojibway
+ok
 oka
 okanagan
 okapi
@@ -2318,6 +2322,7 @@ oktastylos
 okthabah
 okuari
 okupukupu
+ol
 ola
 olacaceae
 olacaceous
@@ -3589,6 +3594,7 @@ oozoa
 oozoid
 oozooid
 oozy
+op
 opa
 opacate
 opacification
@@ -5799,6 +5805,7 @@ oryzomys
 oryzopsis
 oryzorictes
 oryzorictinae
+os
 osage
 osages
 osaka
@@ -8528,8 +8535,6 @@ outtrump
 outtrumped
 outtrumping
 outtrumps
-outttore
-outttorn
 outturn
 outturned
 outturns
@@ -13339,6 +13344,7 @@ oxyurid
 oxyuridae
 oxyurous
 oxywelding
+oy
 oyana
 oyapock
 oye
@@ -13381,6 +13387,7 @@ oystershell
 oysterwife
 oysterwoman
 oysterwomen
+oz
 ozaena
 ozaenas
 ozalid

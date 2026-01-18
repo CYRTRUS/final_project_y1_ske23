@@ -266,7 +266,6 @@ bacciferous
 bacciform
 baccilla
 baccilli
-baccillla
 baccillum
 baccivorous
 baccy
@@ -4344,15 +4343,6 @@ bazoukery
 bazouki
 bazoukis
 bazzite
-bbc
-bbl
-bbls
-bbs
-bbw
-bcd
-bcf
-bch
-bchs
 bde
 bdellatomy
 bdellid
@@ -4369,13 +4359,7 @@ bdellotomy
 bdelloura
 bdellouridae
 bdellovibrio
-bdft
-bdl
 bdle
-bdls
-bdrm
-bds
-bdsm
 be
 bea
 beach
@@ -8422,7 +8406,6 @@ bhat
 bhava
 bhavan
 bhavani
-bhd
 bheestie
 bheesties
 bheesty
@@ -8449,7 +8432,6 @@ bhotia
 bhotiya
 bhowani
 bhoy
-bhp
 bhumidar
 bhumij
 bhunder
@@ -9489,7 +9471,6 @@ bimillennia
 bimillennium
 bimillenniums
 bimillionaire
-bimilllennia
 bimini
 bimmeler
 bimodal
@@ -10721,15 +10702,6 @@ bizygomatic
 bizz
 bizzarro
 bjorne
-bkbndr
-bkcy
-bkg
-bkgd
-bklr
-bkpr
-bkpt
-bks
-bkt
 blaasop
 blab
 blabbed
@@ -11313,9 +11285,6 @@ blazonries
 blazonry
 blazons
 blazy
-bld
-bldg
-bldr
 blea
 bleaberry
 bleach
@@ -11717,7 +11686,6 @@ blizzardly
 blizzardous
 blizzards
 blizzardy
-blk
 blksize
 blo
 bloat
@@ -11999,7 +11967,6 @@ blotting
 blottingly
 blottings
 blotto
-blottto
 blotty
 bloubiskop
 blouse
@@ -12095,7 +12062,6 @@ blowzily
 blowziness
 blowzing
 blowzy
-bls
 blub
 blubbed
 blubber
@@ -12373,15 +12339,10 @@ blut
 blutter
 blutwurst
 blutwursts
-blvd
 blype
 blypes
-blyth
 blyton
 bma
-bmw
-bmx
-bnf
 bo
 boa
 boadicea
@@ -13504,8 +13465,6 @@ bonniest
 bonnily
 bonniness
 bonnive
-bonnne
-bonnnes
 bonnock
 bonnocks
 bonnwis
@@ -14229,7 +14188,6 @@ bossing
 bossism
 bossisms
 bosslet
-bossship
 bossy
 bossyboots
 bostal
@@ -15045,8 +15003,6 @@ bozos
 bozze
 bozzetto
 bpi
-bps
-bpt
 bra
 braaivleis
 braata
@@ -16893,7 +16849,6 @@ brixton
 brixworth
 briza
 brizz
-brl
 brno
 bro
 broach
@@ -17590,8 +17545,6 @@ browsts
 browzer
 broxbourne
 broxtowe
-brr
-brrr
 bruang
 brubeck
 brubru
@@ -17847,7 +17800,6 @@ bryant
 bryanthus
 bryce
 brylcreem
-bryn
 bryndza
 brynhild
 brynza
@@ -17876,15 +17828,9 @@ bryozoum
 brython
 brythonic
 bryum
-bsc
-bsf
-bsh
-bskt
-bst
 btise
-btl
-btry
 btu
+bu
 bual
 buat
 buats
@@ -18614,7 +18560,6 @@ bullishness
 bullism
 bullit
 bullition
-bulllike
 bullneck
 bullnecked
 bullnecks
@@ -19983,11 +19928,8 @@ buzzwigs
 buzzword
 buzzwords
 buzzy
-bvt
 bwana
 bwanas
-bxs
-by
 byard
 byatt
 byblidaceae
@@ -20047,7 +19989,6 @@ byordinar
 byordinary
 byous
 byously
-byp
 bypass
 bypassed
 bypasser
@@ -20062,7 +20003,6 @@ byplay
 byplays
 byproduct
 byproducts
-byrd
 byre
 byreman
 byremen
@@ -20070,7 +20010,6 @@ byres
 byrewards
 byrewoman
 byrewomen
-byrl
 byrlady
 byrlakin
 byrlaw
@@ -20079,7 +20018,6 @@ byrlawmen
 byrlaws
 byrled
 byrling
-byrls
 byrnie
 byrnies
 byroad
@@ -20101,12 +20039,10 @@ byrri
 byrrus
 byrsonima
 byrthynsak
-bys
 bysacki
 bysen
 bysmalith
 byspell
-byss
 byssaceous
 byssal
 byssi
@@ -20127,7 +20063,6 @@ bytalk
 bytalks
 byte
 bytes
-byth
 bytime
 bytownite
 bytownitite

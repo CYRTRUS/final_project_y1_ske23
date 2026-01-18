@@ -45,6 +45,7 @@ ubiquitousness
 ubiquity
 ubound
 ubussu
+uc
 uca
 ucal
 ucayale
@@ -53,6 +54,7 @@ uchee
 uckers
 uckia
 ucuuba
+ud
 udaipur
 udal
 udaler
@@ -97,6 +99,7 @@ ufologists
 ufology
 ufos
 ufs
+ug
 ugali
 uganda
 ugandan
@@ -175,6 +178,7 @@ uitotan
 uitspan
 ujamaa
 uji
+uk
 ukaea
 ukase
 ukases
@@ -192,6 +196,7 @@ ukrainians
 ukranian
 ukulele
 ukuleles
+ul
 ula
 ulama
 ulamas
@@ -23328,6 +23333,7 @@ utu
 utum
 uturuncu
 uucpnet
+uv
 uva
 uval
 uvala
@@ -23372,6 +23378,8 @@ uvulotome
 uvulotomies
 uvulotomy
 uvver
+uw
+ux
 uxbridge
 uxorial
 uxoriality

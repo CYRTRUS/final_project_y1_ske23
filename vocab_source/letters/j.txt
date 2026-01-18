@@ -1,3 +1,4 @@
+ja
 jaalin
 jaap
 jab
@@ -1020,9 +1021,7 @@ jazzlike
 jazzman
 jazzmen
 jazzy
-jcl
-jct
-jctn
+je
 jealous
 jealouse
 jealoushood
@@ -1525,7 +1524,7 @@ jheel
 jhool
 jhow
 jhuria
-jhvh
+ji
 jianyun
 jiao
 jiaos
@@ -1821,15 +1820,12 @@ jizyah
 jizz
 jizzen
 jizzes
-jms
 jnana
 jnanamarga
 jnanas
 jnanashakti
 jnanayoga
 jnanendriya
-jnd
-jnt
 jo
 joab
 joachim
@@ -2448,7 +2444,7 @@ joysticks
 joyweed
 jozy
 jpeg
-jpg
+ju
 juamave
 juan
 juang
@@ -3175,10 +3171,8 @@ juxtaterrestrial
 juxtatropical
 juyas
 juza
-jvc
 jwahar
 jymold
 jynginae
 jyngine
-jynx
 jynxes

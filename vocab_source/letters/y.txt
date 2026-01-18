@@ -1,3 +1,4 @@
+ya
 yaba
 yabber
 yabbered
@@ -444,7 +445,7 @@ yclept
 yday
 ydrad
 ydred
-yds
+ye
 yea
 yeah
 yeahs
@@ -776,7 +777,7 @@ yggdrasil
 ygo
 ygoe
 yha
-yhwh
+yi
 yid
 yiddish
 yiddisher
@@ -1167,10 +1168,8 @@ ypsiloid
 ypurinan
 yquem
 yrapt
-yrbk
 yrent
 yrivd
-yrs
 yseult
 ytter
 ytterbia
@@ -1195,6 +1194,7 @@ yttrocrasite
 yttrofluorite
 yttrogummite
 yttrotantalite
+yu
 yuan
 yuans
 yuapin

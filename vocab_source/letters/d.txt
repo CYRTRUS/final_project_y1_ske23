@@ -1570,12 +1570,8 @@ dazzlingly
 dazzlingness
 dazzlings
 dbe
-dbl
-dbms
 dbridement
-dbrn
 dca
-dcb
 dcbname
 dclass
 dcollet
@@ -1583,8 +1579,6 @@ dcolletage
 dcor
 dda
 ddname
-ddr
-ddt
 de
 dea
 deaccession
@@ -5078,7 +5072,6 @@ demiglobe
 demigod
 demigoddess
 demigoddesses
-demigoddessship
 demigods
 demigorge
 demigrate
@@ -8861,9 +8854,6 @@ dezincs
 dezinkify
 dezymotize
 dfault
-dfc
-dfm
-dft
 dgag
 dghaisa
 dha
@@ -8937,7 +8927,6 @@ dhourras
 dhow
 dhows
 dhritarashtra
-dhss
 dhu
 dhunchee
 dhunchi
@@ -8953,6 +8942,7 @@ dhuti
 dhutis
 dhyal
 dhyana
+di
 dia
 diabantite
 diabase
@@ -11665,9 +11655,6 @@ dippier
 dippiest
 dipping
 dippings
-dipppier
-dipppiest
-dipppy
 dippy
 diprimary
 diprismatic
@@ -15730,18 +15717,11 @@ djinns
 djinny
 djins
 djuka
-dkg
-dkl
-dkm
-dks
-dlr
-dlvy
 dmarche
 dmod
 dna
 dnepropetrovsk
 dnieper
-dns
 do
 doa
 doab
@@ -17907,7 +17887,6 @@ dozy
 dozzle
 dozzled
 dpi
-dpt
 drab
 draba
 drabant
@@ -18353,7 +18332,6 @@ drays
 drayton
 drazel
 drazels
-drch
 dread
 dreadable
 dreaded
@@ -19142,7 +19120,6 @@ druxiness
 druxy
 druz
 druze
-dry
 dryable
 dryad
 dryades
@@ -19177,7 +19154,6 @@ dryinid
 dryish
 drylot
 drylots
-dryly
 drynaria
 dryness
 drynesses
@@ -19196,23 +19172,18 @@ dryopteroid
 drypoint
 drypoints
 dryrot
-drys
 drysalter
 drysalteries
 drysalters
 drysaltery
 drysne
 dryster
-dryth
 drywall
 drywalls
 dryworker
-dsc
 dschubba
 dsect
 dsects
-dsl
-dsm
 dsname
 dsnames
 dso
@@ -19221,13 +19192,10 @@ dsobos
 dsomo
 dsomos
 dsos
-dsp
-dsr
 dsri
-dtd
 dtente
-dts
 dtset
+du
 duad
 duadic
 duads
@@ -20313,8 +20281,6 @@ duykers
 dvaita
 dvandva
 dvandvas
-dvd
-dvds
 dvigu
 dvorak
 dvornik
@@ -20377,7 +20343,6 @@ dwine
 dwined
 dwines
 dwining
-dwt
 dwyer
 dwyka
 dyable
@@ -20401,7 +20366,6 @@ dybbuk
 dybbukim
 dybbuks
 dyce
-dyck
 dye
 dyeability
 dyeable
@@ -20446,7 +20410,6 @@ dykiest
 dyking
 dylan
 dymchurch
-dyn
 dynactinometer
 dynagraph
 dynam
@@ -20549,7 +20512,6 @@ dyotheletism
 dyothelism
 dyphone
 dypnone
-dys
 dysacousia
 dysacousis
 dysacousma

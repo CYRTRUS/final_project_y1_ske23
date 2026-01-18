@@ -1,3 +1,4 @@
+va
 vaad
 vaadim
 vaagmaer
@@ -1421,7 +1422,7 @@ vax
 vayu
 vazimba
 vbulletin
-vcr
+ve
 veadar
 veadore
 veal
@@ -3202,7 +3203,7 @@ vexingly
 vexingness
 vexings
 vext
-vhs
+vi
 via
 viabilities
 viability
@@ -3690,7 +3691,6 @@ viharas
 vihuela
 vihuelas
 vii
-viii
 vijao
 vijay
 viking
@@ -5021,6 +5021,7 @@ vlsi
 vltava
 vmintegral
 vmsize
+vo
 voar
 voars
 vobis
@@ -5759,7 +5760,6 @@ voyeurweb
 voyeuse
 voyeuses
 voyuer
-vpn
 vraic
 vraicker
 vraickers
@@ -5785,7 +5785,7 @@ vrouws
 vrow
 vrows
 vsnet
-vss
+vu
 vucom
 vucoms
 vug
@@ -5937,8 +5937,6 @@ vulvouterine
 vulvovaginal
 vulvovaginitis
 vum
-vvll
 vyase
 vying
 vyingly
-vyrnwy

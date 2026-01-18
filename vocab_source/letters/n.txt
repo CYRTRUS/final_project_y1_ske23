@@ -1335,8 +1335,6 @@ nazirs
 nazis
 nazism
 nba
-nbc
-nbg
 ncaa
 nco
 nderpraised
@@ -3491,8 +3489,6 @@ nexuses
 ney
 neyanda
 nez
-nfl
-ng
 ngai
 ngaio
 ngaios
@@ -3512,8 +3508,7 @@ nhan
 nhandu
 nhandus
 nheengatu
-nhl
-nhs
+ni
 niacin
 niacinamide
 niacins
@@ -4536,7 +4531,6 @@ njamena
 njave
 nne
 nnethermore
-nnw
 no
 noa
 noachian
@@ -9644,7 +9638,6 @@ nonplussation
 nonplussed
 nonplusses
 nonplussing
-nonplusssed
 nonplutocratic
 nonplutocratical
 nonpneumatic
@@ -12810,14 +12803,9 @@ nozzle
 nozzler
 nozzles
 npeel
-npfx
 nrarucu
 nritta
 nsec
-nspcc
-nsw
-nth
-ntsc
 nu
 nuadu
 nuagism
@@ -13523,7 +13511,6 @@ nyaya
 nybble
 nybbles
 nybblize
-nyc
 nychthemer
 nychthemeral
 nychthemeron
@@ -13573,10 +13560,8 @@ nylghau
 nylghaus
 nylon
 nylons
-nym
 nyman
 nymil
-nymph
 nympha
 nymphae
 nymphaea
@@ -13606,7 +13591,6 @@ nymphish
 nymphitis
 nymphlike
 nymphlin
-nymphly
 nympho
 nymphoides
 nympholepsia
@@ -13624,9 +13608,7 @@ nymphonacea
 nymphos
 nymphosis
 nymphotomy
-nymphs
 nymphwise
-nymss
 nynorsk
 nyoro
 nyphomania
@@ -13637,5 +13619,4 @@ nystagmic
 nystagmus
 nystatin
 nytril
-nyx
 nyxis

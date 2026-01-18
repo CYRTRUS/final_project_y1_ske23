@@ -954,12 +954,9 @@ kazoos
 kazuhiro
 kbar
 kbe
-kbps
 kbyte
 kbytes
 kcal
-kcb
-kcmg
 kde
 kea
 keach
@@ -1782,8 +1779,6 @@ keywd
 keyword
 keywords
 keywrd
-kgf
-kgr
 kha
 khachaturian
 khaddar
@@ -3035,7 +3030,6 @@ klipspringers
 klismoi
 klismos
 klister
-kln
 klockmannite
 kloesse
 klom
@@ -3989,8 +3983,6 @@ koyan
 koyemshi
 kozo
 kozuka
-kpc
-kph
 kpuesi
 kra
 kraal
@@ -4144,7 +4136,6 @@ kroons
 krosa
 krouchka
 kroushka
-krs
 kru
 krubi
 krubis
@@ -4186,6 +4177,7 @@ kshatriya
 kshatriyahood
 ksi
 kthibh
+ku
 kua
 kuala
 kuan
@@ -4428,7 +4420,6 @@ kwatuma
 kwaznku
 kwazoku
 kwela
-kwhr
 kwintra
 kwon
 kyabuka
@@ -4462,12 +4453,10 @@ kybosh
 kyboshed
 kyboshes
 kyboshing
-kyd
 kye
 kyke
 kyklopes
 kyklops
-kyl
 kyle
 kyleakin
 kyles
@@ -4517,7 +4506,6 @@ kyries
 kyrine
 kyriologic
 kyrios
-kyschty
 kyschtymite
 kyte
 kytes
