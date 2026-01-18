@@ -1,8 +1,12 @@
 from collections import Counter
 
 # Load vocabulary
-with open("vocab.txt", "r", encoding="utf-8") as file:
-    word_list = [word.strip().lower() for word in file]
+try:
+    file = open("vocab.txt", "r", encoding="utf-8")
+except FileNotFoundError:
+    file = open("vocab_source/vocab.txt", "r", encoding="utf-8")
+
+word_list = [word.strip().lower() for word in file]
 
 
 def longest_word_from_letters(scrambled_letters, word_list):
