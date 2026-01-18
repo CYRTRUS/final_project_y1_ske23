@@ -30,16 +30,23 @@ def longest_word_from_letters(scrambled_letters, word_list):
     return result_list
 
 
+def has_vowels(word):
+    for vowel in ["a", "e", "i", "o", "u"]:
+        if vowel in word:
+            return True
+    return False
+
+
 while True:
-    scrambled_letters = input(f"\n{'Available letters:':<24}").strip().lower()
-    if not scrambled_letters or scrambled_letters in ["q", "quit"]:
+    scrambled_letters = input(f"{'\nAvailable letters:':<32}").strip().lower()
+    if scrambled_letters in ["q", "quit"]:
         break
-
-    result_list = longest_word_from_letters(scrambled_letters, word_list)
-
-    if result_list:
-        print(f"{'Longest possible word:':<23}", ", ".join(result_list))
+    elif len(scrambled_letters) < 2 or not has_vowels(scrambled_letters):
+        print(f"{'Longest possible word:':<30}", "No valid word found")
     else:
-        print(f"{'Longest possible word:':<23}", "No valid word found")
+        result_list = longest_word_from_letters(scrambled_letters, word_list)
 
-    print()
+        if result_list:
+            print(f"{f'Longest possible word ({len(result_list[0])}):':<30}", ", ".join(result_list))
+        else:
+            print(f"{'Longest possible word:':<30}", "No valid word found")
