@@ -1,4 +1,3 @@
-import os
 import re
 
 TRIPLE_REPEAT_RE = re.compile(r"(.)\1\1")
@@ -30,9 +29,8 @@ collected_words: list[str] = []
 
 i = 1
 while True:
-    input_path = os.path.join("mix_words", f"words_0{i}.txt")
     try:
-        with open(input_path, "r", encoding="utf-8") as f:
+        with open(f"vocab_source/mix_words/words_0{i}.txt", "r", encoding="utf-8") as f:
             for word in f:
                 word = word.strip().lower()
                 if is_valid_word(word, seen):
@@ -45,7 +43,7 @@ while True:
 # Sort before writing
 collected_words.sort()
 
-with open("vocab.txt", "w", encoding="utf-8") as f:
+with open("vocab_source/vocab.txt", "w", encoding="utf-8") as f:
     for word in collected_words:
         f.write(word + "\n")
 

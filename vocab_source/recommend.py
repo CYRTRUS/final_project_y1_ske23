@@ -25,7 +25,10 @@ def longest_word_from_letters(scrambled_letters, word_list):
                 longest_length = len_word
                 result_list = [word]   # reset list with new longest word
             elif len_word == longest_length:
-                result_list.append(word.strip())
+                if scrambled_letters == word:
+                    result_list.insert(0, word.strip())
+                else:
+                    result_list.append(word.strip())
 
     return result_list
 
@@ -38,7 +41,8 @@ def has_vowels(word):
 
 
 while True:
-    scrambled_letters = input(f"{'\nAvailable letters:':<32}").strip().lower()
+    scrambled_letters = input(f"{'\nAvailable letters:':<32}").strip().lower()[:16]
+
     if scrambled_letters in ["q", "quit"]:
         break
     elif len(scrambled_letters) < 2 or not has_vowels(scrambled_letters):
