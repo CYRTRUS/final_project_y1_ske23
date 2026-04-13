@@ -12,42 +12,39 @@ class MenuScene(BaseScene):
         click_sound
     ):
 
-        super().__init__(
-            screen,
-            switch_scene_callback
-        )
+        super().__init__(screen, switch_scene_callback)
+
+        button_w = 400
+        button_h = 120
+        padding = 30
+        start_y = (self.height - (button_h*3 + padding*2)) // 2
+        start_x = (self.width - button_w) // 2
 
         start_button = Button(
-            500,
-            300,
-            200,
-            60,
+            start_x,
+            start_y + ((button_h + padding) * 0),
+            button_w,
+            button_h,
             "Start",
-            lambda:
-                self.switch_scene_callback(
-                    "gameplay"
-                ),
+            lambda: self.switch_scene_callback("gameplay"),
             click_sound
         )
 
         stats_button = Button(
-            500,
-            380,
-            200,
-            60,
+            start_x,
+            start_y + ((button_h + padding) * 1),
+            button_w,
+            button_h,
             "Stats",
-            lambda:
-                self.switch_scene_callback(
-                    "stats"
-                ),
+            lambda: self.switch_scene_callback("stats"),
             click_sound
         )
 
         quit_button = Button(
-            500,
-            460,
-            200,
-            60,
+            start_x,
+            start_y + ((button_h + padding) * 2),
+            button_w,
+            button_h,
             "Quit",
             quit_callback,
             click_sound

@@ -11,10 +11,7 @@ class StatsScene(BaseScene):
         click_sound
     ):
 
-        super().__init__(
-            screen,
-            switch_scene_callback
-        )
+        super().__init__(screen, switch_scene_callback)
 
         back_button = Button(
             20,
@@ -22,10 +19,7 @@ class StatsScene(BaseScene):
             150,
             50,
             "Back",
-            lambda:
-                self.switch_scene_callback(
-                    "menu"
-                ),
+            lambda: self.switch_scene_callback("menu"),
             click_sound
         )
 

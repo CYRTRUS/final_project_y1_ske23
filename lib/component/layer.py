@@ -4,6 +4,7 @@ import random
 
 
 class Layer:
+
     def __init__(
         self,
         image_name,
@@ -26,19 +27,17 @@ class Layer:
         ).convert_alpha()
 
         self.screen_width = screen_width
-
         self.screen_height = screen_height
 
         self.x = x
         self.y = y
 
         self.height_scale = height_scale
-
         self.random_scale = random_scale
 
         base_height = int(
-            self.screen_height *
-            self.height_scale
+            self.screen_height
+            * self.height_scale
         )
 
         self.base_image = self.scale_to_height(
@@ -65,7 +64,9 @@ class Layer:
         w = image.get_width()
         h = image.get_height()
 
-        new_w = int(w * (height / h))
+        new_w = int(
+            w * (height / h)
+        )
 
         return pygame.transform.scale(
             image,
@@ -73,13 +74,16 @@ class Layer:
         )
 
     def generate_random_tiles(self):
+
         tiles = []
+
         x_offset = 0
+
         base_w = self.base_image.get_width()
         base_h = self.base_image.get_height()
 
         while x_offset < self.screen_width * 2:
-            # Random size
+
             scale_factor = random.uniform(
                 0.9,
                 1.25
@@ -98,21 +102,23 @@ class Layer:
                 (new_w, new_h)
             )
 
-            # Random horizontal flip
             img = pygame.transform.flip(
                 img,
                 random.choice([True, False]),
                 False
             )
 
-            # Random Y offset
             y_offset = random.randint(
                 -100,
                 0
             )
 
             tiles.append(
-                (img, x_offset, y_offset)
+                (
+                    img,
+                    x_offset,
+                    y_offset
+                )
             )
 
             x_offset += img.get_width()
