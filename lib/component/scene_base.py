@@ -15,29 +15,32 @@ class BaseScene:
         self.height = screen.get_height()
 
         self.layers = [
-
+            # Yellow bg
             Layer(
                 "back.png",
                 self.width,
                 self.height,
+                x=rd.randint(-200, 0),
                 y=-200,
             ),
-
+            # Green trees
             Layer(
                 "far.png",
                 self.width,
                 self.height,
+                x=rd.randint(-200, 0),
                 y=-200,
             ),
-
+            # Actual trees
             Layer(
                 "middle.png",
                 self.width,
                 self.height,
+                x=rd.randint(-100, 0),
                 y=-200,
                 random_scale=True
             ),
-
+            # Ground
             Layer(
                 "front.png",
                 self.width,
