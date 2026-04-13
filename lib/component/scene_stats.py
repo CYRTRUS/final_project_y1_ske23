@@ -14,8 +14,8 @@ class StatsScene(BaseScene):
         super().__init__(screen, switch_scene_callback)
 
         back_button = Button(
-            20,
-            20,
+            1430,
+            730,
             150,
             50,
             "Back",

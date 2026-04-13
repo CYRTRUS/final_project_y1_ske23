@@ -22,9 +22,10 @@ class Game:
         self.click_sound.set_volume(1.0)
 
         self.data_collector = DataCollection()
-        self.player = Player(self)
-        self.enemy = Enemy(self, 1)
+
         self.current_level = 1
+        self.player = Player(self)
+        self.enemy = Enemy(self, self.current_level)
 
         self.scene_manager = SceneManager(
             self.screen,
@@ -40,7 +41,18 @@ class Game:
     def start_game(self):
         self.current_level = 1
         self.player = Player(self)
-        self.enemy = Enemy(1)
+        self.enemy = Enemy(self, self.current_level)
+
+        self.scene_manager = SceneManager(
+            self.screen,
+            self.switch_scene,
+            self.quit_game,
+            self.click_sound,
+            self.player,
+            self.enemy,
+            self.data_collector,
+            self
+        )
 
     def update_game_state(self):
         if self.enemy.health <= 0:
@@ -50,14 +62,21 @@ class Game:
 
     def next_level(self):
         self.current_level += 1
-        self.enemy = Enemy(self.current_level)
+        self.enemy = Enemy(self, self.current_level)
+        self.player.set_level(self.current_level)
         self.data_collector.log_event("level_up", self.current_level)
+
+        # Update the gameplay scene's reference to the new enemy
+        gameplay = self.scene_manager.scenes.get("gameplay")
+        if gameplay:
+            gameplay.enemy = self.enemy
 
     def end_game(self):
         self.running = False
         self.data_collector.save_to_csv()
 
-    def switch_scene(self, name): self.scene_manager.switch_scene(name)
+    def switch_scene(self, name):
+        self.scene_manager.switch_scene(name)
 
     def quit_game(self):
         self.click_sound.play()
@@ -74,6 +93,7 @@ class Game:
             self.scene_manager.update()
             self.update_game_state()
             self.scene_manager.draw()
+
             self.player.update_anim()
             self.enemy.update_anim()
 

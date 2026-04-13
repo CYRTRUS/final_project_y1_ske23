@@ -14,44 +14,44 @@ class MenuScene(BaseScene):
 
         super().__init__(screen, switch_scene_callback)
 
-        button_w = 400
-        button_h = 120
-        padding = 30
-        start_y = (self.height - (button_h*3 + padding*2)) // 2
+        button_w = 260
+        button_h = 100
+        padding = 20
+
+        start_y = (self.height - (button_h * 3 + padding * 2)) // 2
         start_x = (self.width - button_w) // 2
 
-        start_button = Button(
-            start_x,
-            start_y + ((button_h + padding) * 0),
-            button_w,
-            button_h,
-            "Start",
-            lambda: self.switch_scene_callback("gameplay"),
-            click_sound
-        )
+        self.buttons = [
+            Button(
+                start_x,
+                start_y + ((button_h + padding) * 0),
+                button_w,
+                button_h,
+                "Start",
+                lambda: self.switch_scene_callback("gameplay"),
+                click_sound,
+                color=(200, 50, 50)
+            ),
 
-        stats_button = Button(
-            start_x,
-            start_y + ((button_h + padding) * 1),
-            button_w,
-            button_h,
-            "Stats",
-            lambda: self.switch_scene_callback("stats"),
-            click_sound
-        )
+            Button(
+                start_x,
+                start_y + ((button_h + padding) * 1),
+                button_w,
+                button_h,
+                "Stats",
+                lambda: self.switch_scene_callback("stats"),
+                click_sound,
+                color=(200, 50, 50)
+            ),
 
-        quit_button = Button(
-            start_x,
-            start_y + ((button_h + padding) * 2),
-            button_w,
-            button_h,
-            "Quit",
-            quit_callback,
-            click_sound
-        )
-
-        self.buttons.extend([
-            start_button,
-            stats_button,
-            quit_button
-        ])
+            Button(
+                start_x,
+                start_y + ((button_h + padding) * 2),
+                button_w,
+                button_h,
+                "Quit",
+                quit_callback,
+                click_sound,
+                color=(200, 50, 50)
+            )
+        ]
