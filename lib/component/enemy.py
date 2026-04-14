@@ -1,84 +1,342 @@
-import os
 import math
+import os
+import random
 import pygame
 from lib.component.animated_sprite import AnimatedSprite
+from lib.component.hp_bar import HpBar
+from lib.component.effect_text import EffectText
+from lib.component.tile import roll_enemy_ability
+from lib.component.config import Config
+
+# SFX cache─────────
+SFX = {}
+
+
+def _load_sfx(name):
+    if name not in SFX:
+        try:
+            SFX[name] = pygame.mixer.Sound(os.path.join("lib", "sfx", name))
+        except Exception:
+            SFX[name] = None
+    return SFX[name]
+
+
+def _play(name):
+    """Play a sound at the global sfx_volume level."""
+    s = _load_sfx(name)
+    if s:
+        # Set volume from config (sfx_volume is 0-100)
+        s.set_volume(Config.sfx_volume / 100)
+        s.play()
 
 
 class Enemy:
-    def __init__(self, game, level=1):
+    def __init__(self, game, level=1, health=None):
         self.game = game
         self.level = level
 
-        # HP: 10 + 5*(lvl-1)   Damage: int(2 + 0.3*(lvl-1))
-        self.max_health = 10 + 5 * (level - 1)
-        self.health = self.max_health
-        self.attack_damage = int(2 + 0.3 * (level - 1))
+        # HP / damage from Config
+        self.max_health = Config.enemy_base_hp + Config.enemy_factor_hp * (level - 1)
+        self.health = health if health is not None else self.max_health
+        self.attack_damage = int(Config.enemy_base_dmg + Config.enemy_factor_dmg * (level - 1))
 
-        self.x = 1050
-        self.y = game.HEIGHT // 2
+        self.frozen_turns = 0
+        self.weakened_turns = 0
+
+        # True while transitioning to the next level; blocks all enemy actions
+        self.leveling_up = False
+
+        self._steps = []
+        self._step_idx = 0
+        self._busy = False
+        self._is_dead = False
+        self._is_hurting = False
+        self._extra_turn = False
+        self._on_complete = None
+
+        # Walking speed (set per-attack; default = normal, lunging = fast)
+        self._walk_step = Config.entity_walking_speed
+        self._cur_x = 0.0
+
+        # Whether the current attack should use lunge speed
+        self._lunge = False
 
         scale = getattr(game, "enemy_scale", 6)
 
-        self.sprite = AnimatedSprite(
-            os.path.join("lib", "asset", "Orc-Idle.png"),
-            scale=scale,
-            x=self.x,
-            y=0,
-            speed=8
+        def make(name, one_shot=False, speed=8):
+            return AnimatedSprite(
+                os.path.join("lib", "asset", name),
+                scale=scale, x=0, y=0, speed=speed, one_shot=one_shot
+            )
+
+        self.sprites = {
+            "idle":    make("Orc-Idle.png"),
+            "walk_f":  make("Orc-Walk.png"),
+            "walk_b":  make("Orc-Walk.png"),
+            "attack1": make("Orc-Attack01.png", one_shot=True),
+            "attack2": make("Orc-Attack02.png", one_shot=True),
+            "hurt":    make("Orc-Hurt.png",     one_shot=True),
+            "death":   make("Orc-Death.png",    one_shot=True),
+        }
+        for key in ("idle", "walk_f", "attack1", "attack2", "hurt", "death"):
+            self.sprites[key].flip(True, False)
+
+        w, h = self.sprites["idle"].get_size()
+        self._base_x = game.WIDTH - w - 50
+        self._base_y = game.HEIGHT // 2 - h // 2 - 20
+        self._cur_x = float(self._base_x)
+        self._target_x = int(game.WIDTH * 0.05)
+
+        for sp in self.sprites.values():
+            sp.x = self._base_x
+            sp.y = self._base_y
+
+        self._cur_sprite = self.sprites["idle"]
+
+        bar_x = game.WIDTH - 500 - 20
+        font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 22)
+        self.hp_bar = HpBar(
+            bar_x, 10, 500, 22,
+            (200, 50, 50), (80, 20, 20), (200, 160, 100),
+            font, pad=20, rtl=True
         )
 
-        self.sprite.flip(True, False)
-
-        h = self.sprite.get_size()[1]
-        self.sprite.y = game.HEIGHT // 2 - h // 2 - 20
-
-        # Font for HP display
-        self.font = pygame.font.Font(
-            "lib/font/minercraftory.regular.ttf", 24
+        # Hint text floats above the enemy sprite
+        self.hint_y_offset = -60
+        self.hint_font_size = 26
+        self.hint_shadow = (2, 2)
+        # duration=None -> stays until player attacks (hide() called in player._resolve_attack)
+        self.hint_text = EffectText(
+            "lib/font/minercraftory.regular.ttf",
+            self.hint_font_size, self.hint_shadow, duration=None
         )
 
-    def update_anim(self):
-        self.sprite.update()
-
-    def draw(self, screen):
-        self.sprite.draw(screen)
-        self._draw_health(screen)
-
-    def _draw_health(self, screen):
-        sw, _ = self.sprite.get_size()
-        sprite_cx = int(self.sprite.x + sw // 2)
-        sprite_top = int(self.sprite.y)
-
-        # HP bar dimensions
-        bar_w = max(sw, 120)
-        bar_h = 14
-        bar_x = sprite_cx - bar_w // 2
-        bar_y = sprite_top - bar_h - 28
-
-        # Background bar
-        pygame.draw.rect(screen, (80, 20, 20), (bar_x, bar_y, bar_w, bar_h), border_radius=4)
-
-        # Health fill
-        ratio = max(0, self.health / self.max_health)
-        fill_w = int(bar_w * ratio)
-        if fill_w > 0:
-            color = (200, 50, 50) if ratio > 0.4 else (220, 120, 30)
-            pygame.draw.rect(screen, color, (bar_x, bar_y, fill_w, bar_h), border_radius=4)
-
-        # Border
-        pygame.draw.rect(screen, (200, 160, 100), (bar_x, bar_y, bar_w, bar_h), 2, border_radius=4)
-
-        # HP text above bar
-        hp_text = self.font.render(
-            f"HP  {self.health}({self.max_health})", True, (255, 220, 150)
-        )
-        text_rect = hp_text.get_rect(centerx=sprite_cx, bottom=bar_y - 4)
-        screen.blit(hp_text, text_rect)
-
-        # Level label
-        lvl_text = self.font.render(f"Lv.{self.level}", True, (255, 200, 80))
-        lvl_rect = lvl_text.get_rect(centerx=sprite_cx, bottom=text_rect.top - 2)
-        screen.blit(lvl_text, lvl_rect)
+    # Damage / death
 
     def receive_damage(self, dmg):
-        self.health = max(0, self.health - dmg)
+        self.health = max(0, self.health - max(0, dmg))
+
+    def trigger_hurt_animation(self):
+        """Play the hurt animation. Skip if dead or mid-transition."""
+        if self._is_dead or self._busy or self.leveling_up:
+            return
+        self._is_hurting = True
+        sp = self.sprites["hurt"]
+        sp.x = int(self._cur_x)
+        sp.y = self._base_y
+        sp.reset()
+        self._cur_sprite = sp
+        # Random hurt voice
+        _play(f"enemy_hurt_{random.randint(1, 3)}.mp3")
+
+    def trigger_death_animation(self):
+        self._is_dead = True
+        self._busy = True
+        self._extra_turn = False
+        self._on_complete = None
+        self.leveling_up = True  # Block further actions during transition
+        sp = self.sprites["death"]
+        sp.x = int(self._cur_x)
+        sp.y = self._base_y
+        sp.reset()
+        self._cur_sprite = sp
+        # Random death voice
+        _play(f"enemy_die_{random.randint(1, 3)}.mp3")
+
+    # Attack sequence ──────────────────────────────────────────────────────
+
+    def trigger_attack_sequence(self, on_complete=None):
+        if self._busy or self._is_dead or self.leveling_up:
+            return
+
+        self._on_complete = on_complete
+        self._busy = True
+
+        atk_key = f"attack{random.randint(1, 2)}"
+        self._steps = [
+            ("walk_f",),
+            ("attack", atk_key),
+            ("walk_b",),
+            ("idle",)
+        ]
+        self._step_idx = 0
+        self._exec_step()
+
+    def _exec_step(self):
+        if self._step_idx >= len(self._steps):
+            self._finish()
+            return
+
+        tag = self._steps[self._step_idx][0]
+
+        if tag == "walk_f":
+            sp = self.sprites["walk_f"]
+            # Use lunge speed (fast) when a special ability is active
+            sp.speed = self._walk_step
+            sp.reset()
+            sp.x = int(self._cur_x)
+            sp.y = self._base_y
+            self._cur_sprite = sp
+
+        elif tag == "attack":
+            sp = self.sprites[self._steps[self._step_idx][1]]
+            sp.reset()
+            sp.x = int(self._cur_x)
+            sp.y = self._base_y
+            self._cur_sprite = sp
+            _play("minecraft_axe_hit.mp3")
+            self._resolve_attack()
+
+        elif tag == "walk_b":
+            sp = self.sprites["walk_b"]
+            sp.speed = self._walk_step
+            sp.reset()
+            sp.x = int(self._cur_x)
+            sp.y = self._base_y
+            self._cur_sprite = sp
+
+        elif tag == "idle":
+            self._finish()
+
+    def _finish(self):
+        self._busy = False
+        self._lunge = False
+        self._cur_x = float(self._base_x)
+        # Restore walking speed to normal
+        self._walk_step = Config.entity_walking_speed
+
+        self._cur_sprite = self.sprites["idle"]
+        self.sprites["idle"].reset()
+        self._sync_sprites()
+
+        # Extra turn only if both parties are alive and not leveling
+        if (self._extra_turn
+                and not self.game.player._is_dead
+                and not self._is_dead
+                and not self.leveling_up):
+            self._extra_turn = False
+            saved = self._on_complete
+            self._on_complete = None
+            self.trigger_attack_sequence(on_complete=saved)
+
+        elif self._on_complete:
+            cb = self._on_complete
+            self._on_complete = None
+            cb()
+
+        self._extra_turn = False
+
+    def _resolve_attack(self):
+        if self.leveling_up:
+            return
+        if self.health <= 0 or self._is_dead:
+            return
+
+        player = self.game.player
+        ability = roll_enemy_ability(self.level)
+        dmg = self.attack_damage
+
+        # Decide whether to lunge (any non-normal ability -> fast walk)
+        if ability != "n":
+            self._lunge = True
+            self._walk_step = int(Config.entity_walking_speed / Config.entity_lunge_speed)
+            # Random idle/ability voice
+            _play(f"enemy_idle_{random.randint(1, 3)}.mp3")
+
+        # Apply weakened debuff first
+        if self.weakened_turns > 0:
+            dmg = math.ceil(dmg * 0.5)
+            self.weakened_turns -= 1
+            if self.weakened_turns == 0:
+                # Debuff expired -> restore bar color
+                self.hp_bar.override_color = None
+
+        player.receive_damage(max(0, dmg))
+
+        # Special abilities ───────────────────────────────────
+        if ability == "g":
+            # Heal enemy
+            heal_amt = math.ceil(0.1 * self.max_health)
+            self.health = min(self.max_health, self.health + heal_amt)
+            player.effect_text.show(f"Enemy healed {heal_amt} HP!", (60, 200, 80))
+            _play("health_potion.mp3")
+
+        elif ability == "b":
+            # Freeze -> enemy gets an extra turn; tint PLAYER bar blue
+            if self.health > 0:
+                self._extra_turn = True
+            player.hp_bar.override_color = (60, 120, 240)
+            player._pending_blue_reset = True   # clear after player next attacks
+            player.effect_text.show("Frozen! Enemy attacks again!", (60, 120, 240))
+            _play("jojo_sawarudo.mp3")
+
+        elif ability == "p":
+            # Weaken player; tint PLAYER bar purple
+            player.weakened_turns = getattr(player, "weakened_turns", 0) + 1
+            player.hp_bar.override_color = (160, 60, 220)
+            player.effect_text.show("Weakened! Your attack reduced!", (160, 60, 220))
+            _play("undertaker_bell_repeat.mp3")
+
+    # Animation update (called every frame) ────────────────────────────────
+
+    def update_anim(self):
+        sp = self._cur_sprite
+        sp.update()
+
+        if self._is_dead:
+            if sp.done:
+                self._busy = False
+            self._sync_sprites()
+            self.hp_bar.tick(self.health, self.max_health)
+            return
+
+        if self._is_hurting:
+            if sp.done:
+                self._is_hurting = False
+                self._cur_sprite = self.sprites["idle"]
+                self.sprites["idle"].reset()
+            self._sync_sprites()
+            self.hp_bar.tick(self.health, self.max_health)
+            return
+
+        if self._busy and self._step_idx < len(self._steps):
+            tag = self._steps[self._step_idx][0]
+
+            if tag == "walk_f":
+                # Move toward the player (enemy walks left)
+                self._cur_x -= self._walk_step
+                if self._cur_x <= self._target_x:
+                    self._cur_x = float(self._target_x)
+                    self._step_idx += 1
+                    self._exec_step()
+
+            elif tag == "attack":
+                if sp.done:
+                    self._step_idx += 1
+                    self._exec_step()
+
+            elif tag == "walk_b":
+                self._cur_x += self._walk_step
+                if self._cur_x >= self._base_x:
+                    self._cur_x = float(self._base_x)
+                    self._step_idx += 1
+                    self._exec_step()
+
+        self._sync_sprites()
+        self.hp_bar.tick(self.health, self.max_health)
+
+    def _sync_sprites(self):
+        for s in self.sprites.values():
+            s.x = int(self._cur_x)
+            s.y = self._base_y
+
+    def draw(self, screen):
+        self._cur_sprite.draw(screen)
+        self.hp_bar.draw(
+            screen,
+            left_text=f"Lv.{self.level}",
+            right_text=f"HP {int(self.health)}({self.max_health})"
+        )
+        sprite_w = self.sprites["idle"].get_size()[0]
+        cx = int(self._cur_x) + sprite_w // 2
+        self.hint_text.draw(screen, cx, 250)

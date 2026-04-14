@@ -1,93 +1,349 @@
+import os
+import pygame
 from lib.component.scene_base import BaseScene
 from lib.component.button import Button
 from lib.component.board import Board
-import pygame
-import os
+from lib.component.enemy import Enemy
+from lib.component.config import Config
+from lib.component.tile import ABILITY_DEFS
 
 
 class GameplayScene(BaseScene):
     def __init__(self, screen, switch_scene_callback, click_sound, player, enemy, data_collector, game):
         super().__init__(screen, switch_scene_callback)
-
         self.player = player
         self.enemy = enemy
         self.game = game
         self.click_sound = click_sound
+        self.data_collector = data_collector
+        self.attack_locked = False
+        self.rerolls = Config.max_reroll
+        self._last_reroll_lvl = 0
+        self.leveling_up = False
 
+        # Whether the "How to Play" overlay is visible
+        self._show_help = False
+
+        # Fonts
+        self.death_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 90)
+        self.score_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 32)
+        self.hint_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 26)
+        self.help_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 18)
+        self.help_title_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 30)
+
+        # Buttons
         self.attack_button = Button(
             675, 425, 250, 75, "Attack",
-            lambda: self.board.attack(),
-            click_sound,
-            font_size=36,
-            color=(120, 120, 120)  # gray default
+            self._try_attack, click_sound, font_size=36, color=(120, 120, 120)
+        )
+        self.hint_button = Button(
+            20, 730, 150, 50, "Hint",
+            self._use_hint, click_sound, font_size=24, color=(80, 80, 200)
+        )
+        self.reroll_button = Button(
+            1270, 730, 150, 50, "Reroll",
+            self._use_reroll, click_sound, font_size=24, color=(160, 100, 20)
+        )
+        # "How to Play" button - sits to the right of Hint
+        self.help_button = Button(
+            180, 730, 200, 50, "How to Play",
+            self._toggle_help, click_sound, font_size=22, color=(40, 120, 40)
         )
 
-        self.buttons = [
-            Button(1430, 730, 150, 50, "Back",
-                   lambda: self.switch_scene_callback("menu"),
-                   click_sound,
-                   color=(200, 50, 50)),  # red default
+        def _back():
+            self.game.data_collector.log_program_closed(
+                getattr(self.game, "current_level", 1)
+            )
+            self.game.data_collector.save_game(self.game)
+            self.switch_scene_callback("menu")
 
-            self.attack_button
+        self.back_button = Button(
+            1430, 730, 150, 50, "Back",
+            _back, click_sound, color=(200, 50, 50)
+        )
+        self.buttons = [
+            self.back_button, self.attack_button,
+            self.hint_button, self.reroll_button, self.help_button
         ]
 
+        # Board image ───────────────────────────────────────────────────────
         board_path = os.path.join("lib", "asset", "board.png")
         original = pygame.image.load(board_path).convert_alpha()
-
         target_w = int(self.width * 0.4)
-        ratio = target_w / original.get_width()
-        target_h = int(original.get_height() * ratio)
-
+        target_h = int(original.get_height() * (target_w / original.get_width()))
         self.board_image = pygame.transform.scale(original, (target_w, target_h))
         rect = self.board_image.get_rect()
-
         self.board_x = self.width // 2 - rect.width // 2
         self.board_y = self.height - rect.height
-
         self.board = Board(
             self.width, self.height,
-            self.board_x, self.board_y,
-            rect.width, rect.height,
-            self.click_sound,
-            self.game
+            self.board_x, self.board_y, rect.width, rect.height,
+            self.click_sound, self.game
         )
 
+        # Ambient music ─────────────────────────────────────────────────────
+        self._start_ambient()
+
+    # Ambient music helpers ─────────────────────────────────────────────────
+
+    def _start_ambient(self):
+        """Load and loop the forest ambient track."""
+        try:
+            ambient_path = os.path.join("lib", "sfx", "forest_ambient.mp3")
+            pygame.mixer.music.load(ambient_path)
+            pygame.mixer.music.set_volume(Config.ambient_volume / 100)
+            pygame.mixer.music.play(-1)   # -1 = loop forever
+        except Exception:
+            pass  # Silently skip if file is missing
+
+    # Save / restore ────────────────────────────────────────────────────────
+
+    def restore_from_save(self, save_data):
+        self.rerolls = save_data.get("player_rerolls", Config.max_reroll)
+        if "tiles" in save_data:
+            self.board.load_from_save(save_data["tiles"])
+
+    # Button callbacks ──────────────────────────────────────────────────────
+
+    def _toggle_help(self):
+        """Show / hide the How to Play overlay."""
+        self._show_help = not self._show_help
+
+    def _use_hint(self):
+        if self.attack_locked or self.game.player._is_dead or self._show_help:
+            return
+        word = self.board.get_longest_possible_word()
+        if word:
+            self.game.enemy.hint_text.show(f"The word is {word}", (255, 255, 255))
+        # Each hint adds Config.hint_penalty turns of 0-damage (grace covers the first attack)
+        self.game.player.hint_penalty_turns += Config.hint_penalty
+        self.game.player.hint_grace = True
+
+    def _use_reroll(self):
+        if self.rerolls <= 0 or self.game.player._is_dead or self._show_help:
+            return
+        self.rerolls -= 1
+        self.board.reroll_board()
+
+    def _try_attack(self):
+        if self.attack_locked or self.game.player._is_dead or self._show_help:
+            return
+        if self.board.is_current_word_valid():
+            self.attack_locked = True
+            self.board.attack(on_complete=self._on_player_anim_done)
+
+    # Combat callbacks ──────────────────────────────────────────────────────
+
+    def _on_player_anim_done(self):
+        enemy = self.game.enemy
+
+        if enemy.health <= 0 or enemy._is_dead:
+            # Player killed the enemy; handle level transition
+            self._handle_level_complete()
+            return
+
+        # Guard: skip enemy turn if still mid-transition
+        if self.leveling_up:
+            return
+
+        if enemy.frozen_turns > 0:
+            enemy.frozen_turns -= 1
+            self.attack_locked = False
+            return
+
+        enemy.trigger_attack_sequence(on_complete=self._on_enemy_anim_done)
+
+    def _handle_level_complete(self):
+        self.leveling_up = True
+        self.game.current_level += 1
+        new_lvl = self.game.current_level
+
+        # set_level first so max_health is correct before assigning health
+        self.game.player.set_level(new_lvl)
+        self.game.player.health = self.game.player.max_health
+
+        # New enemy starts at full HP automatically
+        self.game.enemy = Enemy(self.game, new_lvl)
+        self.enemy = self.game.enemy
+
+        self.leveling_up = False
+        self.attack_locked = False
+        self.game.data_collector.save_game(self.game)
+
+    def _on_enemy_anim_done(self):
+        if self.game.player._is_dead:
+            return
+        self.attack_locked = False
+
+    # Event / update / draw ─────────────────────────────────────────────────
+
     def handle_event(self, event):
+        # Clicking anywhere while the help overlay is open closes it
+        if self._show_help:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self._show_help = False
+            return
+
+        if self.game.player._is_dead:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.game.data_collector.delete_save()
+                # Stop ambient music on game-over
+                pygame.mixer.music.stop()
+                self.switch_scene_callback("menu")
+            return
+
         super().handle_event(event)
         self.board.handle_event(event)
 
     def update(self):
         self.board.update()
+        self.enemy = self.game.enemy
 
+        # Grant a free reroll every 5 levels (capped at max_reroll)
+        lvl = getattr(self.game, "current_level", 1)
+        if lvl % 5 == 0 and lvl != self._last_reroll_lvl:
+            self._last_reroll_lvl = lvl
+            self.rerolls = min(Config.max_reroll, self.rerolls + 1)
+
+        # Update attack button colour depending on word validity
         valid = self.board.is_current_word_valid()
-
-        # base color logic
-        if valid:
-            base = (50, 200, 80)  # green
-        else:
-            base = (120, 120, 120)  # gray
-
+        base = (50, 200, 80) if (valid and not self.attack_locked) else (120, 120, 120)
         self.attack_button.color_idle = base
-
-        # hover = +30 brightness
         mx, my = pygame.mouse.get_pos()
-        if self.attack_button.rect.collidepoint((mx, my)):
-            self.attack_button.color_hover = (
-                min(base[0] + 30, 255),
-                min(base[1] + 30, 255),
-                min(base[2] + 30, 255),
-            )
-        else:
-            self.attack_button.color_hover = base
+        hover_color = (
+            min(base[0] + 30, 255),
+            min(base[1] + 30, 255),
+            min(base[2] + 30, 255)
+        )
+        self.attack_button.color_hover = (
+            hover_color if self.attack_button.rect.collidepoint((mx, my)) else base
+        )
+        self.reroll_button.text = f"Reroll ({self.rerolls})"
+        self.reroll_button.color_idle = (
+            (160, 100, 20) if self.rerolls > 0 else (80, 60, 40)
+        )
 
     def draw(self):
         self.draw_background()
         self.game.player.draw(self.screen)
         self.game.enemy.draw(self.screen)
-
         self.screen.blit(self.board_image, (self.board_x, self.board_y))
-
         for b in self.buttons:
             b.draw(self.screen)
-
         self.board.draw(self.screen)
+        self._draw_hud()
+
+        if self.game.player._is_dead:
+            self._draw_death_overlay()
+        elif self._show_help:
+            self._draw_help_overlay()
+
+    def _draw_hud(self):
+        lvl = getattr(self.game, "current_level", 1)
+        score = getattr(self.game.player, "score", 0)
+        text = f"LEVEL {lvl} ({score})"
+        shadow = self.score_font.render(text, True, (20, 20, 20))
+        label = self.score_font.render(text, True, (255, 220, 100))
+        cx = self.width // 2
+        self.screen.blit(shadow, shadow.get_rect(centerx=cx + 2, top=12))
+        self.screen.blit(label,  label.get_rect(centerx=cx, top=10))
+
+    def _draw_death_overlay(self):
+        overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 191))
+        self.screen.blit(overlay, (0, 0))
+        cx = self.width // 2
+        cy = self.height // 2
+        score = getattr(self.game.player, "score", 0)
+        fail_sh = self.death_font.render("You Failed", True, (60, 0, 0))
+        fail_lb = self.death_font.render("You Failed", True, (220, 50, 50))
+        self.screen.blit(fail_sh, fail_sh.get_rect(centerx=cx + 4, centery=cy - 60 + 4))
+        self.screen.blit(fail_lb, fail_lb.get_rect(centerx=cx, centery=cy - 60))
+        sc_lb = self.score_font.render(f"Score {score}", True, (255, 220, 100))
+        self.screen.blit(sc_lb, sc_lb.get_rect(centerx=cx, centery=cy + 30))
+        tip = self.hint_font.render("Click anywhere to continue", True, (180, 180, 180))
+        self.screen.blit(tip, tip.get_rect(centerx=cx, centery=cy + 100))
+
+    def _draw_help_overlay(self):
+        """Semi-transparent 'How to Play' screen drawn over the game."""
+        overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, int(255*0.9)))   # 90% opacity black
+        self.screen.blit(overlay, (0, 0))
+
+        cx = self.width // 2
+        y_start = 10
+        line_h = 25
+
+        def draw_line(text, color=(230, 230, 230), y_off=0, font=None):
+            f = font or self.help_font
+            lbl = f.render(text, True, color)
+            self.screen.blit(lbl, lbl.get_rect(centerx=cx, top=y_start + y_off))
+
+        # Title──
+        draw_line("HOW TO PLAY", (255, 220, 80), 0, self.help_title_font)
+
+        # General rules ────────────────────────────────────────────────────
+        lines = [
+            ("Build words from the tiles on the board.", (220, 220, 220), 40),
+            ("Click tiles to select them, click again to deselect.", (220, 220, 220), 40 + line_h),
+            ("Press Attack to deal damage when a valid word is selected.", (220, 220, 220), 40 + line_h * 2),
+            ("Damage depends on word length.", (255, 40, 40), 40 + line_h * 3),
+            ("After your attack the enemy strikes back.", (220, 220, 220), 40 + line_h * 4),
+            ("Survive as many levels as you can!", (220, 220, 220), 40 + line_h * 5),
+        ]
+        for text, color, y_off in lines:
+            draw_line(text, color, y_off)
+
+        # Tile abilities ────────────────────────────────────────────────────
+        section_y = 40 + line_h * 7
+        draw_line("TILE ABILITIES", (255, 220, 80), section_y, self.help_title_font)
+
+        ability_info = [
+            ("n", "Normal - no bonus"),
+            ("g", "Green - heals you for 10 percent of your max HP per tile"),
+            ("o", "Orange - add 25 percent damage multiplier"),
+            ("r", "Red - add 50 percent damage multiplier"),
+            ("w", "Gray - add 100 percent damage multiplier"),
+            ("b", "Blue - freezes enemy for 1 turn (skip their attack)"),
+            ("p", "Purple - weakens enemy for 1 turn (reduces enemy's damage by 50 percent)"),
+        ]
+        dot_size = 16
+        row_h = line_h
+        for i, (key, desc) in enumerate(ability_info):
+            color = ABILITY_DEFS[key]["color"]
+            y = y_start + section_y + 44 + i * row_h
+            # Coloured dot
+            dot_rect = pygame.Rect(cx - 340, y + (row_h - dot_size) // 2, dot_size, dot_size)
+            pygame.draw.rect(self.screen, color, dot_rect, border_radius=4)
+            lbl = self.help_font.render(desc, True, (220, 220, 220))
+            self.screen.blit(lbl, (cx - 310, y))
+
+        # Enemy abilities ───────────────────────────────────────────────────
+        enemy_section_y = section_y + 44 + len(ability_info) * row_h + 20
+        draw_line("ENEMY ABILITIES", (255, 100, 100), enemy_section_y, self.help_title_font)
+        enemy_info = [
+            ("Green - enemy heals itself"),
+            ("Blue - freezes player for 1 turn (skip your attack)"),
+            ("Purple - weakens player for 1 turn (reduces player's damage by 50 percent)"),
+        ]
+        for i, desc in enumerate(enemy_info):
+            y = y_start + enemy_section_y + 44 + i * row_h
+            lbl = self.help_font.render(desc, True, (220, 180, 180))
+            self.screen.blit(lbl, lbl.get_rect(centerx=cx, top=y))
+
+        # Hints / rerolls ───────────────────────────────────────────────────
+        misc_y = enemy_section_y + 44 + len(enemy_info) * row_h + 20
+        draw_line("HINTS and REROLLS", (255, 220, 80), misc_y, self.help_title_font)
+        misc = [
+            f"Hint - reveals the longest possible word. Penalises you for {Config.hint_penalty} turns (0 damage).",
+            f"Reroll - shuffles the entire board. You get {Config.max_reroll} rerolls, and add 1 every 5 completed levels.",
+        ]
+        for i, desc in enumerate(misc):
+            y = y_start + misc_y + 44 + i * row_h
+            lbl = self.help_font.render(desc, True, (220, 220, 220))
+            self.screen.blit(lbl, lbl.get_rect(centerx=cx, top=y))
+
+        # Dismiss hint ──────────────────────────────────────────────────────
+        dismiss_y = y_start + misc_y + 44 + len(misc) * row_h + 30
+        dismiss = self.hint_font.render("Click anywhere to close", True, (180, 180, 180))
+        self.screen.blit(dismiss, dismiss.get_rect(centerx=cx, top=dismiss_y))
