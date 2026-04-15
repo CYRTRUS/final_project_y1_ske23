@@ -32,10 +32,8 @@ class MenuScene(BaseScene):
                    click_sound, color=(200, 50, 50)),
         ]
 
-        # Title font (large)
         try:
-            self.title_font = pygame.font.Font(
-                "lib/font/minercraftory.regular.ttf", 120)
+            self.title_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 120)
         except Exception:
             self.title_font = pygame.font.SysFont("Arial", 120)
 
@@ -44,15 +42,11 @@ class MenuScene(BaseScene):
     def draw(self):
         self.draw_background()
 
-        # Shadow
-        shadow = self.title_font.render("WordForge", True, (0, 0, 0))
         cx = self.width // 2
-        screen = self.screen
-        shadow_offset = 8
-        screen.blit(shadow, shadow.get_rect(centerx=cx + shadow_offset, top=self._title_y + shadow_offset))
-        # Title
+        shadow = self.title_font.render("WordForge", True, (0, 0, 0))
+        self.screen.blit(shadow, shadow.get_rect(centerx=cx + 8, top=self._title_y + 8))
         title = self.title_font.render("WordForge", True, (255, 255, 255))
-        screen.blit(title, title.get_rect(centerx=cx, top=self._title_y))
+        self.screen.blit(title, title.get_rect(centerx=cx, top=self._title_y))
 
         for b in self.buttons:
-            b.draw(screen)
+            b.draw(self.screen)

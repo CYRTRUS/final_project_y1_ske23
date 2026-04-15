@@ -3,3 +3,6 @@ vocab_source/
 tempCodeRunnerFile.py
 test.py
 test.txt
+*.psd
+*.json
+*.csv

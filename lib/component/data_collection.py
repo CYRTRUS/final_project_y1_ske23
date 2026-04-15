@@ -6,7 +6,7 @@ from datetime import datetime
 from lib.component.config import Config
 
 # Build log path from config filename
-LOG_PATH  = os.path.join("lib", "stats", Config.log_filename)
+LOG_PATH = os.path.join("lib", "stats", Config.log_filename)
 SAVE_PATH = "game_save.json"
 LOG_HEADER = [
     "timestamp", "tile_clicked", "damage_received",
@@ -42,10 +42,14 @@ class DataCollection:
         row["tile_clicked"] = "True"
         self._write_row(row)
 
+    def log_death(self):
+        row = self._base_row(0)
+        self._write_row(row)
+
     def log_attack(self, word, dmg, level):
         row = self._base_row(level)
-        row["created_word"]  = word
-        row["damage_dealt"]  = dmg
+        row["created_word"] = word
+        row["damage_dealt"] = dmg
         self._write_row(row)
 
     def log_damage_received(self, dmg, level):
@@ -82,9 +86,98 @@ class DataCollection:
     def load_game(self):
         if not os.path.exists(SAVE_PATH):
             return None
+
         try:
             with open(SAVE_PATH) as f:
-                return json.load(f)
+                data = json.load(f)
+
+            if not isinstance(data, dict):
+                return None
+
+            required_keys = [
+                "current_level",
+                "player_health",
+                "player_max_health",
+                "player_score",
+                "player_rerolls",
+                "enemy_health",
+                "enemy_max_health",
+                "tiles",
+            ]
+
+            for key in required_keys:
+                if key not in data:
+                    return None
+
+            int_fields = [
+                "current_level",
+                "player_health",
+                "player_max_health",
+                "player_score",
+                "player_rerolls",
+                "enemy_health",
+                "enemy_max_health",
+            ]
+
+            for key in int_fields:
+                if not isinstance(data[key], int):
+                    return None
+                if data[key] < 0:
+                    return None
+
+            # Clamp HP
+            if data["player_health"] <= 0:
+                return None
+
+            data["player_health"] = min(
+                data["player_health"],
+                data["player_max_health"]
+            )
+
+            data["enemy_health"] = min(
+                data["enemy_health"],
+                data["enemy_max_health"]
+            )
+
+            tiles = data["tiles"]
+
+            if not isinstance(tiles, list):
+                return None
+
+            expected_tile_count = 16
+
+            if len(tiles) != expected_tile_count:
+                return None
+
+            valid_abilities = {"n", "g", "o", "r", "w", "b", "p"}
+
+            for tile in tiles:
+                if not isinstance(tile, dict):
+                    return None
+
+                if "letter" not in tile or "ability" not in tile:
+                    return None
+
+                letter = tile["letter"]
+                ability = tile["ability"]
+
+                if not isinstance(letter, str):
+                    return None
+
+                if len(letter) != 1 or not letter.isalpha():
+                    return None
+
+                if not isinstance(ability, str):
+                    return None
+
+                if ability not in valid_abilities:
+                    return None
+
+                # Uppercase
+                tile["letter"] = letter.upper()
+
+            return data
+
         except Exception:
             return None
 

@@ -8,7 +8,6 @@ from lib.component.effect_text import EffectText
 from lib.component.tile import roll_enemy_ability
 from lib.component.config import Config
 
-# SFX cache─────────
 SFX = {}
 
 
@@ -22,10 +21,8 @@ def _load_sfx(name):
 
 
 def _play(name):
-    """Play a sound at the global sfx_volume level."""
     s = _load_sfx(name)
     if s:
-        # Set volume from config (sfx_volume is 0-100)
         s.set_volume(Config.sfx_volume / 100)
         s.play()
 
@@ -35,15 +32,17 @@ class Enemy:
         self.game = game
         self.level = level
 
-        # HP / damage from Config
         self.max_health = Config.enemy_base_hp + Config.enemy_factor_hp * (level - 1)
         self.health = health if health is not None else self.max_health
-        self.attack_damage = int(Config.enemy_base_dmg + Config.enemy_factor_dmg * (level - 1))
+
+        threshold = Config.enemy_threshold_dmg
+        attack_damage_min = round(Config.enemy_base_dmg + Config.enemy_factor_dmg * (level - 1)*(100-threshold), 0)
+        attack_damage_max = round(Config.enemy_base_dmg + Config.enemy_factor_dmg * (level - 1)*(100+threshold), 0)
+
+        self.attack_damage = random.randint(int(attack_damage_min), int(attack_damage_max))
 
         self.frozen_turns = 0
         self.weakened_turns = 0
-
-        # True while transitioning to the next level; blocks all enemy actions
         self.leveling_up = False
 
         self._steps = []
@@ -51,15 +50,10 @@ class Enemy:
         self._busy = False
         self._is_dead = False
         self._is_hurting = False
-        self._extra_turn = False
         self._on_complete = None
-
-        # Walking speed (set per-attack; default = normal, lunging = fast)
         self._walk_step = Config.entity_walking_speed
         self._cur_x = 0.0
-
-        # Whether the current attack should use lunge speed
-        self._lunge = False
+        self._pending_ability = "n"
 
         scale = getattr(game, "enemy_scale", 6)
 
@@ -75,8 +69,8 @@ class Enemy:
             "walk_b":  make("Orc-Walk.png"),
             "attack1": make("Orc-Attack01.png", one_shot=True),
             "attack2": make("Orc-Attack02.png", one_shot=True),
-            "hurt":    make("Orc-Hurt.png",     one_shot=True),
-            "death":   make("Orc-Death.png",    one_shot=True),
+            "hurt":    make("Orc-Hurt.png", one_shot=True),
+            "death":   make("Orc-Death.png", one_shot=True),
         }
         for key in ("idle", "walk_f", "attack1", "attack2", "hurt", "death"):
             self.sprites[key].flip(True, False)
@@ -101,23 +95,18 @@ class Enemy:
             font, pad=20, rtl=True
         )
 
-        # Hint text floats above the enemy sprite
         self.hint_y_offset = -60
         self.hint_font_size = 26
         self.hint_shadow = (2, 2)
-        # duration=None -> stays until player attacks (hide() called in player._resolve_attack)
         self.hint_text = EffectText(
             "lib/font/minercraftory.regular.ttf",
             self.hint_font_size, self.hint_shadow, duration=None
         )
 
-    # Damage / death
-
     def receive_damage(self, dmg):
         self.health = max(0, self.health - max(0, dmg))
 
     def trigger_hurt_animation(self):
-        """Play the hurt animation. Skip if dead or mid-transition."""
         if self._is_dead or self._busy or self.leveling_up:
             return
         self._is_hurting = True
@@ -126,24 +115,19 @@ class Enemy:
         sp.y = self._base_y
         sp.reset()
         self._cur_sprite = sp
-        # Random hurt voice
         _play(f"enemy_hurt_{random.randint(1, 3)}.mp3")
 
     def trigger_death_animation(self):
         self._is_dead = True
         self._busy = True
-        self._extra_turn = False
         self._on_complete = None
-        self.leveling_up = True  # Block further actions during transition
+        self.leveling_up = True
         sp = self.sprites["death"]
         sp.x = int(self._cur_x)
         sp.y = self._base_y
         sp.reset()
         self._cur_sprite = sp
-        # Random death voice
         _play(f"enemy_die_{random.randint(1, 3)}.mp3")
-
-    # Attack sequence ──────────────────────────────────────────────────────
 
     def trigger_attack_sequence(self, on_complete=None):
         if self._busy or self._is_dead or self.leveling_up:
@@ -152,13 +136,36 @@ class Enemy:
         self._on_complete = on_complete
         self._busy = True
 
-        atk_key = f"attack{random.randint(1, 2)}"
-        self._steps = [
-            ("walk_f",),
-            ("attack", atk_key),
-            ("walk_b",),
-            ("idle",)
-        ]
+        # Roll ability now so we can set lunge speed before walking starts
+        self._pending_ability = roll_enemy_ability(self.level)
+        ability = self._pending_ability
+
+        if ability != "n":
+            self._walk_step = int(Config.entity_walking_speed / Config.entity_lunge_speed)
+            _play(f"enemy_idle_{random.randint(1, 3)}.mp3")
+        else:
+            self._walk_step = Config.entity_walking_speed
+
+        atk1 = f"attack{random.randint(1, 2)}"
+        atk2 = f"attack{random.randint(1, 2)}"
+
+        if ability == "b":
+            # Blue: walk in, hit twice, walk out
+            self._steps = [
+                ("walk_f",),
+                ("attack", atk1, 1),
+                ("attack", atk2, 2),
+                ("walk_b",),
+                ("idle",),
+            ]
+        else:
+            self._steps = [
+                ("walk_f",),
+                ("attack", atk1, 1),
+                ("walk_b",),
+                ("idle",),
+            ]
+
         self._step_idx = 0
         self._exec_step()
 
@@ -167,11 +174,11 @@ class Enemy:
             self._finish()
             return
 
-        tag = self._steps[self._step_idx][0]
+        step = self._steps[self._step_idx]
+        tag = step[0]
 
         if tag == "walk_f":
             sp = self.sprites["walk_f"]
-            # Use lunge speed (fast) when a special ability is active
             sp.speed = self._walk_step
             sp.reset()
             sp.x = int(self._cur_x)
@@ -179,13 +186,14 @@ class Enemy:
             self._cur_sprite = sp
 
         elif tag == "attack":
-            sp = self.sprites[self._steps[self._step_idx][1]]
+            sp = self.sprites[step[1]]
+            hit_num = step[2]
             sp.reset()
             sp.x = int(self._cur_x)
             sp.y = self._base_y
             self._cur_sprite = sp
             _play("minecraft_axe_hit.mp3")
-            self._resolve_attack()
+            self._resolve_attack(hit_num)
 
         elif tag == "walk_b":
             sp = self.sprites["walk_b"]
@@ -200,84 +208,60 @@ class Enemy:
 
     def _finish(self):
         self._busy = False
-        self._lunge = False
         self._cur_x = float(self._base_x)
-        # Restore walking speed to normal
         self._walk_step = Config.entity_walking_speed
-
         self._cur_sprite = self.sprites["idle"]
         self.sprites["idle"].reset()
         self._sync_sprites()
 
-        # Extra turn only if both parties are alive and not leveling
-        if (self._extra_turn
-                and not self.game.player._is_dead
-                and not self._is_dead
-                and not self.leveling_up):
-            self._extra_turn = False
-            saved = self._on_complete
-            self._on_complete = None
-            self.trigger_attack_sequence(on_complete=saved)
-
-        elif self._on_complete:
+        if self._on_complete:
             cb = self._on_complete
             self._on_complete = None
             cb()
 
-        self._extra_turn = False
-
-    def _resolve_attack(self):
-        if self.leveling_up:
-            return
-        if self.health <= 0 or self._is_dead:
+    def _resolve_attack(self, hit_num=1):
+        if self.leveling_up or self.health <= 0 or self._is_dead:
             return
 
         player = self.game.player
-        ability = roll_enemy_ability(self.level)
+        ability = self._pending_ability
         dmg = self.attack_damage
 
-        # Decide whether to lunge (any non-normal ability -> fast walk)
-        if ability != "n":
-            self._lunge = True
-            self._walk_step = int(Config.entity_walking_speed / Config.entity_lunge_speed)
-            # Random idle/ability voice
-            _play(f"enemy_idle_{random.randint(1, 3)}.mp3")
-
-        # Apply weakened debuff first
+        # Weakened debuff
         if self.weakened_turns > 0:
             dmg = math.ceil(dmg * 0.5)
             self.weakened_turns -= 1
             if self.weakened_turns == 0:
-                # Debuff expired -> restore bar color
                 self.hp_bar.override_color = None
 
-        player.receive_damage(max(0, dmg))
+        if not player._is_dead:
+            player.receive_damage(max(0, dmg))
 
-        # Special abilities ───────────────────────────────────
+        # Blue: hit1 turns player bar blue, hit2 resets it to normal
+        if ability == "b":
+            if hit_num == 1:
+                player.hp_bar.override_color = (60, 120, 240)
+                player.effect_text.show("Enemy attacks twice!", (60, 120, 240))
+                _play("jojo_sawarudo.mp3")
+            else:
+                player.hp_bar.override_color = None
+            return
+
+        # Other abilities only apply on the first (and only) hit
+        if hit_num != 1:
+            return
+
         if ability == "g":
-            # Heal enemy
             heal_amt = math.ceil(0.1 * self.max_health)
             self.health = min(self.max_health, self.health + heal_amt)
             player.effect_text.show(f"Enemy healed {heal_amt} HP!", (60, 200, 80))
             _play("health_potion.mp3")
 
-        elif ability == "b":
-            # Freeze -> enemy gets an extra turn; tint PLAYER bar blue
-            if self.health > 0:
-                self._extra_turn = True
-            player.hp_bar.override_color = (60, 120, 240)
-            player._pending_blue_reset = True   # clear after player next attacks
-            player.effect_text.show("Frozen! Enemy attacks again!", (60, 120, 240))
-            _play("jojo_sawarudo.mp3")
-
         elif ability == "p":
-            # Weaken player; tint PLAYER bar purple
             player.weakened_turns = getattr(player, "weakened_turns", 0) + 1
             player.hp_bar.override_color = (160, 60, 220)
-            player.effect_text.show("Weakened! Your attack reduced!", (160, 60, 220))
+            player.effect_text.show("Weakened! Your damage reduced!", (160, 60, 220))
             _play("undertaker_bell_repeat.mp3")
-
-    # Animation update (called every frame) ────────────────────────────────
 
     def update_anim(self):
         sp = self._cur_sprite
@@ -303,7 +287,6 @@ class Enemy:
             tag = self._steps[self._step_idx][0]
 
             if tag == "walk_f":
-                # Move toward the player (enemy walks left)
                 self._cur_x -= self._walk_step
                 if self._cur_x <= self._target_x:
                     self._cur_x = float(self._target_x)

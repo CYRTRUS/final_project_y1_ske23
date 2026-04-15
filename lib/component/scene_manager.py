@@ -11,14 +11,17 @@ SAVE_PATH = "game_save.json"
 
 
 class SceneManager:
-    def __init__(self, screen, switch_scene_callback, quit_callback, click_sound, player, enemy, data_collector, game):
+    def __init__(self, screen, switch_scene_callback, quit_callback, click_sound,
+                 player, enemy, data_collector, game):
         self.screen = screen
         self.game = game
 
         self.scenes = {}
         self.scenes["menu"] = MenuScene(screen, switch_scene_callback, quit_callback, click_sound)
-        self.scenes["gameplay"] = GameplayScene(screen, switch_scene_callback, click_sound, player, enemy, data_collector, game)
-        self.scenes["stats"] = StatsScene(screen, switch_scene_callback, click_sound)
+        self.scenes["gameplay"] = GameplayScene(
+            screen, switch_scene_callback, click_sound, player, enemy, data_collector, game
+        )
+        self.scenes["stats"] = StatsScene(screen, switch_scene_callback, click_sound, game)
 
         self.current_scene = self.scenes["menu"]
 
@@ -32,26 +35,19 @@ class SceneManager:
             return {}
 
     def switch_scene(self, name):
-
         if name == "gameplay":
-            # load save ONLY when entering gameplay
             save_data = self._load_save()
             self.scenes["gameplay"].restore_from_save(save_data)
-
             try:
                 pygame.mixer.music.load(os.path.join("lib", "sfx", "forest_ambient.mp3"))
                 pygame.mixer.music.set_volume(Config.ambient_volume / 100)
                 pygame.mixer.music.play(-1)
             except Exception:
                 pass
-
         elif name == "stats":
-            # reload CSV ONLY when entering stats
             self.scenes["stats"]._refresh()
-
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.stop()
-
         else:
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.stop()

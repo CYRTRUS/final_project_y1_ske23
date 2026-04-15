@@ -7,7 +7,6 @@ from lib.component.hp_bar import HpBar
 from lib.component.effect_text import EffectText
 from lib.component.config import Config
 
-# ── SFX cache ────────────────────────────────────────────────────────────────
 SFX = {}
 
 
@@ -29,34 +28,28 @@ def _play(name):
 
 class Player:
     def __init__(self, game, health=None, score=0):
-        self.game  = game
+        self.game = game
         self._level = getattr(game, "current_level", 1)
 
-        # HP formula from Config
         self.max_health = self._calc_max_hp(self._level)
-        self.health     = health if health is not None else self.max_health
-        self.score      = score
+        self.health = health if health is not None else self.max_health
+        self.score = score
         self.words_created = []
 
-        # Status-effect counters
-        self.weakened_turns     = 0
+        self.weakened_turns = 0
         self.hint_penalty_turns = 0
-        self.hint_grace         = False
+        self.hint_grace = False
 
-        # Pending flag: after a blue-freeze, clear the bar tint on next attack
-        self._pending_blue_reset = False
-
-        # Attack state machine
-        self._pending_word      = ""
+        self._pending_word = ""
         self._pending_abilities = []
-        self._on_complete       = None
-        self._steps             = []
-        self._step_idx          = 0
-        self._busy              = False
-        self._is_dead           = False
-        self._is_hurting        = False
-        self._cur_x             = 0.0
-        self._cur_walk_step     = Config.entity_walking_speed
+        self._on_complete = None
+        self._steps = []
+        self._step_idx = 0
+        self._busy = False
+        self._is_dead = False
+        self._is_hurting = False
+        self._cur_x = 0.0
+        self._cur_walk_step = Config.entity_walking_speed
 
         self._build_sprites()
 
@@ -67,35 +60,31 @@ class Player:
             font, pad=20, rtl=False
         )
 
-        self.effect_y_offset  = -60
+        self.effect_y_offset = -60
         self.effect_font_size = 26
-        self.effect_shadow    = (2, 2)
+        self.effect_shadow = (2, 2)
         self.effect_text = EffectText(
             "lib/font/minercraftory.regular.ttf",
             self.effect_font_size, self.effect_shadow
         )
-
-    # ── HP formula (mirrors Config) ──────────────────────────────────────────
 
     @staticmethod
     def _calc_max_hp(level):
         return int(Config.player_base_hp + Config.player_factor_hp * (level - 1))
 
     def set_level(self, level):
-        self._level     = level
+        self._level = level
         self.max_health = self._calc_max_hp(level)
-        self.health     = min(self.health, self.max_health)
+        self.health = min(self.health, self.max_health)
         self.hp_bar._ratio = self.health / max(self.max_health, 1)
-
-    # ── Sprite setup ─────────────────────────────────────────────────────────
 
     def _build_sprites(self):
         scale = 6
-        temp  = AnimatedSprite(os.path.join("lib", "asset", "Soldier-Idle.png"), scale=scale)
-        h     = temp.get_size()[1]
-        self._base_y   = self.game.HEIGHT // 2 - h // 2 - 20
-        self._base_x   = 0
-        self._cur_x    = float(self._base_x)
+        temp = AnimatedSprite(os.path.join("lib", "asset", "Soldier-Idle.png"), scale=scale)
+        h = temp.get_size()[1]
+        self._base_y = self.game.HEIGHT // 2 - h // 2 - 20
+        self._base_x = 0
+        self._cur_x = float(self._base_x)
         self._target_x = int(self.game.WIDTH * 0.55)
 
         def make(name, one_shot=False, speed=8):
@@ -111,14 +100,11 @@ class Player:
             "walk_b":  make("Soldier-Walk.png"),
             "attack1": make("Soldier-Attack01.png", one_shot=True),
             "attack2": make("Soldier-Attack02.png", one_shot=True),
-            "attack3": make("Soldier-Attack03.png", one_shot=True),
-            "hurt":    make("Soldier-Hurt.png",     one_shot=True),
-            "death":   make("Soldier-Death.png",    one_shot=True),
+            "hurt":    make("Soldier-Hurt.png", one_shot=True),
+            "death":   make("Soldier-Death.png", one_shot=True),
         }
         self.sprites["walk_b"].flip(True, False)
         self._cur_sprite = self.sprites["idle"]
-
-    # ── Public attack entry point ─────────────────────────────────────────────
 
     def attack_enemy(self, word, abilities, on_complete=None):
         if self._busy or self._is_dead:
@@ -129,24 +115,22 @@ class Player:
         self._start_attack(word, abilities, on_complete)
 
     def _start_attack(self, word, abilities, on_complete=None):
-        self._pending_word      = word
+        self._pending_word = word
         self._pending_abilities = abilities
-        self._on_complete       = on_complete
-        self._busy              = True
+        self._on_complete = on_complete
+        self._busy = True
 
-        # Lunge if any damage-boosting tile is in the selection
         boosted = any(a in abilities for a in ("o", "r", "w"))
         if boosted:
-            # Lunge speed: divide normal speed by the lunge fraction → faster step
+            _play("teleports.mp3")
             self._cur_walk_step = int(Config.entity_walking_speed / Config.entity_lunge_speed)
             anim_speed = 2
-            _play("teleports.mp3")
         else:
             self._cur_walk_step = Config.entity_walking_speed
             anim_speed = 8
 
-        atk_key = f"attack{random.randint(1, 3)}"
-        swing   = "minecraft_sword_swing_2.mp3" if boosted else "minecraft_sword_swing_1.mp3"
+        atk_key = "attack2" if boosted else "attack1"
+        swing = "minecraft_sword_swing_2.mp3" if boosted else "minecraft_sword_swing_1.mp3"
 
         self._steps = [
             ("walk_f", anim_speed),
@@ -157,8 +141,6 @@ class Player:
         self._step_idx = 0
         self._exec_step()
 
-    # ── Damage / death ────────────────────────────────────────────────────────
-
     def receive_damage(self, dmg):
         dmg = max(0, dmg)
         self.health = max(0, self.health - dmg)
@@ -167,6 +149,7 @@ class Player:
         )
         if self.health <= 0:
             self.trigger_death_animation()
+            self.game.data_collector.log_death()
         else:
             self.trigger_hurt_animation()
 
@@ -191,18 +174,15 @@ class Player:
         sp.y = self._base_y
         sp.reset()
         self._cur_sprite = sp
-        # Player death sounds
         _play("player_die.mp3")
         _play("taco_bell_bong.mp3")
-
-    # ── Attack state machine ──────────────────────────────────────────────────
 
     def _exec_step(self):
         if self._step_idx >= len(self._steps):
             self._finish()
             return
         step = self._steps[self._step_idx]
-        tag  = step[0]
+        tag = step[0]
 
         if tag == "walk_f":
             sp = self.sprites["walk_f"]
@@ -233,7 +213,7 @@ class Player:
             self._finish()
 
     def _finish(self):
-        self._busy  = False
+        self._busy = False
         self._cur_x = float(self._base_x)
         self._cur_sprite = self.sprites["idle"]
         self.sprites["idle"].reset()
@@ -244,41 +224,31 @@ class Player:
             cb()
 
     def _resolve_attack(self):
-        word      = self._pending_word
+        word = self._pending_word
         abilities = self._pending_abilities
-        lvl       = self._level
+        lvl = self._level
 
-        # ── Blue freeze: clear enemy bar tint after player's attack ──────────
-        if self._pending_blue_reset:
-            self.game.enemy.hp_bar.override_color = None
-            self._pending_blue_reset = False
-
-        # Hide hint text as soon as the player swings
         self.game.enemy.hint_text.hide()
 
-        # ── Damage calculation ────────────────────────────────────────────────
         base_dmg = len(word) * math.ceil(lvl ** 0.5)
         mult = Config.base_dmg_multiplier
         if "o" in abilities:
-            mult += 0.25
+            mult *= 1.25
         if "r" in abilities:
-            mult += 0.50
+            mult *= 1.50
         if "w" in abilities:
-            mult += 1.00
+            mult *= 2.00
 
-        # Hint penalty: first attack after hint is free (grace), then 0-damage
         if self.hint_grace:
             self.hint_grace = False
         elif self.hint_penalty_turns > 0:
             mult = 0.0
             self.hint_penalty_turns -= 1
 
-        # Weakened debuff (applied by enemy purple tile)
         if self.weakened_turns > 0:
             mult = max(0.0, mult - 0.5)
             self.weakened_turns -= 1
             if self.weakened_turns == 0:
-                # Purple debuff expired → restore player bar to green
                 self.hp_bar.override_color = None
 
         dmg = max(0, math.ceil(base_dmg * mult))
@@ -290,34 +260,29 @@ class Player:
         )
 
         if self.game.enemy.health <= 0:
-            # Enemy killed: trigger death animation + level transition
             self.game.enemy.trigger_death_animation()
             _play("minecraft_level_up.mp3")
-            # Healing is deferred to _handle_level_complete (uses new level's max_health)
         else:
             self.game.enemy.trigger_hurt_animation()
 
-        # Green tile: heal player proportional to number of green tiles used
         green_count = abilities.count("g")
+        blue_count = abilities.count("b")
+        purple_count = abilities.count("p")
         if green_count > 0:
             self.heal(math.ceil(green_count * 0.1 * self.max_health))
             _play("health_potion.mp3")
 
-        # Blue tile: freeze enemy for one turn, tint enemy bar blue
-        if "b" in abilities:
-            self.game.enemy.frozen_turns   = 1
+        if blue_count > 0:
+            self.game.enemy.frozen_turns = blue_count
             self.game.enemy.hp_bar.override_color = (60, 120, 240)
             _play("jojo_sawarudo.mp3")
 
-        # Purple tile: weaken enemy, tint enemy bar purple
-        if "p" in abilities:
+        if purple_count > 0:
             self.game.enemy.weakened_turns = (
-                getattr(self.game.enemy, "weakened_turns", 0) + 1
+                getattr(self.game.enemy, "weakened_turns", 0) + purple_count
             )
             self.game.enemy.hp_bar.override_color = (160, 60, 220)
             _play("undertaker_bell_repeat.mp3")
-
-    # ── Animation update (called every frame) ────────────────────────────────
 
     def update_anim(self):
         sp = self._cur_sprite

@@ -26,8 +26,10 @@ class Game:
         self.player = Player(self)
         self.enemy = Enemy(self, self.current_level)
 
-        self.scene_manager = SceneManager(self.screen, self.switch_scene, self.quit_game, self.click_sound,
-                                          self.player, self.enemy, self.data_collector, self)
+        self.scene_manager = SceneManager(
+            self.screen, self.switch_scene, self.quit_game,
+            self.click_sound, self.player, self.enemy, self.data_collector, self
+        )
 
         save = self.data_collector.load_game()
         if save:
@@ -40,14 +42,15 @@ class Game:
         self.player = Player(self, health=save.get("player_health"), score=save.get("player_score", 0))
         self.player.set_level(self.current_level)
         self.enemy = Enemy(self, self.current_level, health=save.get("enemy_health"))
-        self.scene_manager = SceneManager(self.screen, self.switch_scene, self.quit_game, self.click_sound,
-                                          self.player, self.enemy, self.data_collector, self)
+        self.scene_manager = SceneManager(
+            self.screen, self.switch_scene, self.quit_game,
+            self.click_sound, self.player, self.enemy, self.data_collector, self
+        )
         gameplay = self.scene_manager.scenes.get("gameplay")
         if gameplay:
             gameplay.restore_from_save(save)
 
     def switch_scene(self, name):
-        # If player died and wants to play again, start fresh at level 1
         if name == "gameplay" and self.player._is_dead:
             self._start_fresh()
         self.scene_manager.switch_scene(name)
@@ -56,9 +59,23 @@ class Game:
         self.current_level = 1
         self.player = Player(self)
         self.enemy = Enemy(self, 1)
-        new_gameplay = GameplayScene(self.screen, self.switch_scene, self.click_sound, self.player, self.enemy, self.data_collector, self)
+        new_gameplay = GameplayScene(
+            self.screen, self.switch_scene, self.click_sound,
+            self.player, self.enemy, self.data_collector, self
+        )
         self.scene_manager.scenes["gameplay"] = new_gameplay
         self.data_collector.save_game(self)
+
+    def reset_to_level1(self):
+        """Reset in-memory state to level 1 (called after stats reset)."""
+        self.current_level = 1
+        self.player = Player(self)
+        self.enemy = Enemy(self, 1)
+        new_gameplay = GameplayScene(
+            self.screen, self.switch_scene, self.click_sound,
+            self.player, self.enemy, self.data_collector, self
+        )
+        self.scene_manager.scenes["gameplay"] = new_gameplay
 
     def _save_and_quit(self):
         self.data_collector.log_program_closed(self.current_level)
@@ -66,9 +83,9 @@ class Game:
         self.running = False
 
     def quit_game(self):
+        self._save_and_quit()
         self.click_sound.play()
         pygame.time.delay(100)
-        self._save_and_quit()
 
     def run(self):
         while self.running:
@@ -77,8 +94,6 @@ class Game:
                     self.quit_game()
                 self.scene_manager.handle_event(e)
             self.scene_manager.update()
-            # Level transitions are driven by the callback chain in scene_gameplay,
-            # so no polling loop here — avoids a race with the death animation.
             self.scene_manager.draw()
             self.player.update_anim()
             self.enemy.update_anim()

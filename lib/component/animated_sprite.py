@@ -5,11 +5,11 @@ import os
 class AnimatedSprite:
     """
     Sprite sheet helper.
-    frame_size : (w, h) of each cell  – default (100, 100)
-    frames     : how many frames; if None, auto-detected from sheet width
-    scale      : uniform scale
-    speed      : ticks per frame (lower = faster)
-    one_shot   : if True, stops at last frame and sets .done = True
+    frame_size : (w, h) of each cell - default (100, 100)
+    frames : how many frames; if None, auto-detected from sheet width
+    scale : uniform scale
+    speed : ticks per frame (lower = faster)
+    one_shot : if True, stops at last frame and sets .done = True
     """
 
     def __init__(self, path, frame_size=(100, 100), frames=None,
@@ -37,7 +37,7 @@ class AnimatedSprite:
         self.x = x
         self.y = y
 
-    # ------------------------------------------------------------------ control
+    # control
     def reset(self):
         self.frame_index = 0
         self.timer = 0
@@ -61,7 +61,7 @@ class AnimatedSprite:
     def draw(self, screen):
         screen.blit(self.frames[self.frame_index], (self.x, self.y))
 
-    # ------------------------------------------------------------------ utils
+    # utils
     def set_scale(self, scale):
         self.frames = [
             pygame.transform.scale(f, (int(f.get_width() * scale), int(f.get_height() * scale)))

@@ -24,7 +24,7 @@ class EffectText:
     def draw(self, screen, cx, y):
         if not self.visible or not self.text:
             return
-        # Auto-hide after duration if one is set
+        # Auto-hide after past set duration
         if self.duration is not None and pygame.time.get_ticks() - self.start_time >= self.duration:
             self.hide()
             return
