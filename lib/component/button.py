@@ -1,6 +1,7 @@
 import pygame
 import os
 from lib.component.config import Config
+import random
 
 
 class Button:
@@ -8,9 +9,8 @@ class Button:
 
     def __init__(self, x, y, w, h, text, callback, click_sound=None, font_size=None, color=(200, 50, 50)):
         if Button.hover_sound is None:
-            Button.hover_sound = pygame.mixer.Sound(
-                os.path.join("lib", "sfx", "button_hovering.mp3")
-            )
+            Button.hover_sound = pygame.mixer.Sound(pygame.mixer.Sound(os.path.join(
+                "lib", "sfx", f"{Config.btn_hovering}_{random.randint(1, Config.btn_hovering_var)}.mp3")))
             Button.hover_sound.set_volume(Config.hover_volume/100)
 
         self.rect = pygame.Rect(x, y, w, h)

@@ -26,6 +26,10 @@ def _play(name):
         s.play()
 
 
+def _play_sfx(base, var):
+    _play(f"{base}_{random.randint(1, var)}.mp3")
+
+
 class Player:
     def __init__(self, game, health=None, score=0):
         self.game = game
@@ -36,6 +40,7 @@ class Player:
         self.score = score
         self.words_created = []
 
+        self.frozen_turns = 0
         self.weakened_turns = 0
         self.hint_penalty_turns = 0
         self.hint_grace = False
@@ -54,19 +59,12 @@ class Player:
         self._build_sprites()
 
         font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 22)
-        self.hp_bar = HpBar(
-            20, 10, 500, 22,
-            (60, 200, 80), (20, 60, 20), (100, 200, 120),
-            font, pad=20, rtl=False
-        )
+        self.hp_bar = HpBar(20, 10, 500, 22, (60, 200, 80), (20, 60, 20), (100, 200, 120), font, pad=20, rtl=False)
 
         self.effect_y_offset = -60
         self.effect_font_size = 26
         self.effect_shadow = (2, 2)
-        self.effect_text = EffectText(
-            "lib/font/minercraftory.regular.ttf",
-            self.effect_font_size, self.effect_shadow
-        )
+        self.effect_text = EffectText("lib/font/minercraftory.regular.ttf", self.effect_font_size, self.effect_shadow)
 
     @staticmethod
     def _calc_max_hp(level):
@@ -87,24 +85,31 @@ class Player:
         self._cur_x = float(self._base_x)
         self._target_x = int(self.game.WIDTH * 0.55)
 
-        def make(name, one_shot=False, speed=8):
-            return AnimatedSprite(
-                os.path.join("lib", "asset", name),
-                scale=scale, x=self._base_x, y=self._base_y,
-                speed=speed, one_shot=one_shot
-            )
+        def make(name, one_shot=False, speed=8, flip=False):
+            sp = AnimatedSprite(os.path.join("lib", "asset", name), scale=scale, x=self._base_x, y=self._base_y, speed=speed, one_shot=one_shot)
+            if flip:
+                sp.flip(True, False)
+            return sp
 
         self.sprites = {
             "idle":    make("Soldier-Idle.png"),
             "walk_f":  make("Soldier-Walk.png"),
-            "walk_b":  make("Soldier-Walk.png"),
+            "walk_b":  make("Soldier-Walk.png", flip=True),
             "attack1": make("Soldier-Attack01.png", one_shot=True),
             "attack2": make("Soldier-Attack02.png", one_shot=True),
             "hurt":    make("Soldier-Hurt.png", one_shot=True),
             "death":   make("Soldier-Death.png", one_shot=True),
         }
-        self.sprites["walk_b"].flip(True, False)
         self._cur_sprite = self.sprites["idle"]
+
+    def _update_hp_bar_color(self):
+        # Purple is drawn first, blue overrides (blue has higher priority)
+        if self.weakened_turns > 0:
+            self.hp_bar.override_color = (160, 60, 220)
+        if self.frozen_turns > 0:
+            self.hp_bar.override_color = (60, 120, 240)
+        if self.weakened_turns == 0 and self.frozen_turns == 0:
+            self.hp_bar.override_color = None
 
     def attack_enemy(self, word, abilities, on_complete=None):
         if self._busy or self._is_dead:
@@ -120,9 +125,9 @@ class Player:
         self._on_complete = on_complete
         self._busy = True
 
-        boosted = any(a in abilities for a in ("o", "r", "w"))
+        boosted = any(a in abilities for a in ("orange", "red", "gray"))
         if boosted:
-            _play("teleports.mp3")
+            _play_sfx(Config.boosted, Config.boosted_var)
             self._cur_walk_step = int(Config.entity_walking_speed / Config.entity_lunge_speed)
             anim_speed = 2
         else:
@@ -130,11 +135,11 @@ class Player:
             anim_speed = 8
 
         atk_key = "attack2" if boosted else "attack1"
-        swing = "minecraft_sword_swing_2.mp3" if boosted else "minecraft_sword_swing_1.mp3"
+        swing_sfx = f"{Config.player_attack}_{2 if boosted else 1}.mp3"
 
         self._steps = [
             ("walk_f", anim_speed),
-            ("attack", atk_key, swing),
+            ("attack", atk_key, swing_sfx),
             ("walk_b", anim_speed),
             ("idle",),
         ]
@@ -143,10 +148,10 @@ class Player:
 
     def receive_damage(self, dmg):
         dmg = max(0, dmg)
+        if self.frozen_turns > 0:
+            self.frozen_turns -= 1
         self.health = max(0, self.health - dmg)
-        self.game.data_collector.log_damage_received(
-            dmg, getattr(self.game, "current_level", 1)
-        )
+        self.game.data_collector.log_damage_received(dmg, getattr(self.game, "current_level", 1))
         if self.health <= 0:
             self.trigger_death_animation()
             self.game.data_collector.log_death()
@@ -165,7 +170,7 @@ class Player:
         sp.y = self._base_y
         sp.reset()
         self._cur_sprite = sp
-        _play("blood_splatter.mp3")
+        _play_sfx(Config.blood_sound, Config.blood_sound_var)
 
     def trigger_death_animation(self):
         self._is_dead = True
@@ -174,8 +179,8 @@ class Player:
         sp.y = self._base_y
         sp.reset()
         self._cur_sprite = sp
-        _play("player_die.mp3")
-        _play("taco_bell_bong.mp3")
+        _play_sfx(Config.player_die, Config.player_die_var)
+        _play_sfx(Config.fail_sound, Config.fail_sound_var)
 
     def _exec_step(self):
         if self._step_idx >= len(self._steps):
@@ -230,14 +235,44 @@ class Player:
 
         self.game.enemy.hint_text.hide()
 
-        base_dmg = len(word) * math.ceil(lvl ** 0.5)
+        base_dmg = int(len(word) * math.ceil(lvl ** 0.55) + Config.player_base_dmg)
+
         mult = Config.base_dmg_multiplier
-        if "o" in abilities:
-            mult *= 1.25
-        if "r" in abilities:
-            mult *= 1.50
-        if "w" in abilities:
-            mult *= 2.00
+
+        # Ability calculation order: green, blue, purple, orange, red, gray
+        green_count = abilities.count("green")
+        blue_count = abilities.count("blue")
+        purple_count = abilities.count("purple")
+        orange_count = abilities.count("orange")
+        red_count = abilities.count("red")
+        gray_count = abilities.count("gray")
+
+        if green_count > 0:
+            if self.health != self.max_health:
+                heal_amt = math.ceil(green_count * Config.heal_amount * self.max_health)
+                self.heal(heal_amt)
+                _play_sfx(Config.heal, Config.heal_var)
+
+        if blue_count > 0:
+            self.game.enemy.frozen_turns += blue_count * Config.num_frozen_turn + 1
+            self.game.enemy._update_hp_bar_color()
+            _play_sfx(Config.freeze, Config.freeze_var)
+
+        if purple_count > 0:
+            self.game.enemy.weakened_turns += purple_count * Config.num_weaken_turn
+            self.game.enemy._update_hp_bar_color()
+            _play_sfx(Config.weaken, Config.weaken_var)
+
+        # If word contains x, y, z or ends with r, y, es, or {none_vowel}s will dealt more damgae
+        mult *= 1.05**(word.count("x") + word.count("y") + word.count("z") + word.endswith("r") + word.endswith("y") + word.endswith("es") + (word.endswith("s") and word[-2] not in "aeiou"))
+
+        # Calculate damage boost
+        if orange_count > 0:
+            mult *= Config.orange_boost ** orange_count
+        if red_count > 0:
+            mult *= Config.red_boost ** red_count
+        if gray_count > 0:
+            mult *= Config.gray_boost ** gray_count
 
         if self.hint_grace:
             self.hint_grace = False
@@ -246,43 +281,21 @@ class Player:
             self.hint_penalty_turns -= 1
 
         if self.weakened_turns > 0:
-            mult = max(0.0, mult - 0.5)
+            mult *= Config.weaken_amount
             self.weakened_turns -= 1
-            if self.weakened_turns == 0:
-                self.hp_bar.override_color = None
+            self._update_hp_bar_color()
 
         dmg = max(0, math.ceil(base_dmg * mult))
         self.game.enemy.receive_damage(dmg)
         self.score += len(word)
         self.words_created.append(word)
-        self.game.data_collector.log_attack(
-            word, dmg, getattr(self.game, "current_level", 1)
-        )
+        self.game.data_collector.log_attack(word, dmg, getattr(self.game, "current_level", 1))
 
         if self.game.enemy.health <= 0:
             self.game.enemy.trigger_death_animation()
-            _play("minecraft_level_up.mp3")
+            _play_sfx(Config.level_up, Config.level_up_var)
         else:
             self.game.enemy.trigger_hurt_animation()
-
-        green_count = abilities.count("g")
-        blue_count = abilities.count("b")
-        purple_count = abilities.count("p")
-        if green_count > 0:
-            self.heal(math.ceil(green_count * 0.1 * self.max_health))
-            _play("health_potion.mp3")
-
-        if blue_count > 0:
-            self.game.enemy.frozen_turns = blue_count
-            self.game.enemy.hp_bar.override_color = (60, 120, 240)
-            _play("jojo_sawarudo.mp3")
-
-        if purple_count > 0:
-            self.game.enemy.weakened_turns = (
-                getattr(self.game.enemy, "weakened_turns", 0) + purple_count
-            )
-            self.game.enemy.hp_bar.override_color = (160, 60, 220)
-            _play("undertaker_bell_repeat.mp3")
 
     def update_anim(self):
         sp = self._cur_sprite

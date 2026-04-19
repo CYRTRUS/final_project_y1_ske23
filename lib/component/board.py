@@ -23,9 +23,7 @@ class Board:
         self.padding = 5
         self.selected_padding = 20
         self.tile_size = (bh - 50 - (self.size - 1) * self.padding) // self.size
-        self.font = pygame.font.Font(
-            "lib/font/minercraftory.regular.ttf", int(self.tile_size * 0.6)
-        )
+        self.font = pygame.font.Font("lib/font/minercraftory.regular.ttf", int(self.tile_size * 0.6))
         self.grid = []
         self.selected = []
         self.previous_selected = []
@@ -35,36 +33,48 @@ class Board:
     def _load_word_data(self):
         with open("lib/word_list/word_list.txt", "r", encoding="utf-8") as f:
             words = [w.strip().lower() for w in f if w.strip()]
-        data = {"guarantee_word": []}
+        data = {}
         for w in words:
-            if len(w) == 3:
-                data["guarantee_word"].append(w)
-            data.setdefault(str(len(w)), []).append(w)
+            length = len(w)
+            first = w[0]
+            if length not in data:
+                data[length] = {}
+            if first not in data[length]:
+                data[length][first] = []
+            data[length][first].append(w)
         return data
+
+    def is_valid(self, word):
+        length = len(word)
+        first = word[0] if word else ""
+        return word in self.word_data.get(length, {}).get(first, [])
 
     def is_valid_board(self, letters):
         bc = Counter(letters)
-        return any(not (Counter(w) - bc) for w in self.word_data["guarantee_word"])
+        guarantee_words = self.word_data.get(3, {})
+        all_three = [w for ws in guarantee_words.values() for w in ws]
+        return any(not (Counter(w) - bc) for w in all_three)
 
     def get_longest_possible_word(self):
         bc = Counter(t.letter.lower() for row in self.grid for t in row if t.letter)
         for length in range(16, 2, -1):
-            for w in self.word_data.get(str(length), []):
-                if not (Counter(w) - bc):
-                    return w
+            if length not in self.word_data:
+                continue
+            for l in set(bc):
+                for w in self.word_data[length][l]:
+                    if not (Counter(w) - bc):
+                        return w
         return ""
 
     def generate_valid_board(self):
         while True:
             letters = []
 
-            # Fill exactly max_vowel vowels using config letter weights
             vowel_pool = [v for v in VOWELS if v in Config.letter_weights]
             vowel_w = [Config.letter_weights[v] for v in vowel_pool]
             for _ in range(Config.max_vowel):
                 letters.append(random.choices(vowel_pool, weights=vowel_w, k=1)[0])
 
-            # Remaining letters: reduce vowel weights to 1 so they can still appear but rarely
             temp_w = dict(Config.letter_weights)
             for v in VOWELS:
                 if v in temp_w:
@@ -93,10 +103,7 @@ class Board:
                 y = sy + r * (self.tile_size + self.padding)
                 lvl = getattr(self.game, "current_level", 1)
                 ability = abilities[i] if abilities else roll_player_ability(lvl)
-                row.append(
-                    Tile(letters[i], r, c, self.tile_size, x, y,
-                         self.font, ability=ability, click_sound=self.click_sound)
-                )
+                row.append(Tile(letters[i], r, c, self.tile_size, x, y, self.font, ability=ability, click_sound=self.click_sound))
                 i += 1
             self.grid.append(row)
 
@@ -109,8 +116,7 @@ class Board:
         gw = self.size * self.tile_size + (self.size - 1) * self.padding
         sx = self.bx + (self.bw - gw) // 2
         sy = self.by + (self.bh - gw) // 2 + 15
-        return (sx + col * (self.tile_size + self.padding),
-                sy + row * (self.tile_size + self.padding))
+        return (sx + col * (self.tile_size + self.padding), sy + row * (self.tile_size + self.padding))
 
     def get_current_word(self):
         return "".join(t.letter.lower() for t in self.selected)
@@ -120,10 +126,9 @@ class Board:
 
     def is_current_word_valid(self):
         w = self.get_current_word()
-        return bool(w) and w in self.word_data.get(str(len(w)), [])
+        return bool(w) and self.is_valid(w)
 
     def compare_last_word(self):
-        """return a boolean compare current and previous self.selected"""
         return self.selected == self.previous_selected
 
     def handle_event(self, e):
@@ -134,9 +139,7 @@ class Board:
             if t.contains(pos):
                 if self.click_sound:
                     self.click_sound.play()
-                self.game.data_collector.log_tile_clicked(
-                    getattr(self.game, "current_level", 1)
-                )
+                self.game.data_collector.log_tile_clicked(getattr(self.game, "current_level", 1))
                 for x in self.selected[i:]:
                     x.reset()
                 self.selected = self.selected[:i]
@@ -147,9 +150,7 @@ class Board:
                 if t.letter != "" and t.contains(pos) and not t.selected:
                     if self.click_sound:
                         self.click_sound.play()
-                    self.game.data_collector.log_tile_clicked(
-                        getattr(self.game, "current_level", 1)
-                    )
+                    self.game.data_collector.log_tile_clicked(getattr(self.game, "current_level", 1))
                     t.selected = True
                     self.selected.append(t)
                     self.update_positions()
@@ -157,10 +158,7 @@ class Board:
 
     def update_positions(self):
         y = int(self.sh * 0.15)
-        total = sum(
-            self.tile_size + (self.selected_padding if t.selected else self.padding)
-            for t in self.selected
-        )
+        total = sum(self.tile_size + (self.selected_padding if t.selected else self.padding) for t in self.selected)
         x = self.sw // 2 - total // 2
         for t in self.selected:
             t.move_to(x, y)
@@ -183,10 +181,8 @@ class Board:
         empty_spots = []
         remaining = []
 
-        # Apply gravity per column and track empty spots
         for c in range(self.size):
-            col_tiles = [self.grid[r][c] for r in range(self.size - 1, -1, -1)
-                         if self.grid[r][c].letter != ""]
+            col_tiles = [self.grid[r][c] for r in range(self.size - 1, -1, -1) if self.grid[r][c].letter != ""]
             empty_count = self.size - len(col_tiles)
 
             for idx, tile in enumerate(col_tiles):
@@ -203,7 +199,6 @@ class Board:
         vowel_in_grid = sum(1 for l in remaining if l in VOWELS)
         target_vowels = min(max(0, Config.max_vowel - vowel_in_grid), len(empty_spots))
 
-        # Generate new letters until the full board is valid
         while True:
             new_letters = []
             for _ in range(target_vowels):
@@ -223,11 +218,7 @@ class Board:
 
         for i, (r, c) in enumerate(empty_spots):
             tx, ty = self.get_tile_position(r, c)
-            new_tile = Tile(
-                new_letters[i], r, c, self.tile_size, tx, ty,
-                self.font, ability=roll_player_ability(lvl),
-                click_sound=self.click_sound
-            )
+            new_tile = Tile(new_letters[i], r, c, self.tile_size, tx, ty, self.font, ability=roll_player_ability(lvl), click_sound=self.click_sound)
             spawn_y = self.by - (r + 1) * (self.tile_size + self.padding)
             new_tile.x = tx
             new_tile.y = spawn_y

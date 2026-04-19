@@ -45,7 +45,7 @@ class Layer:
         base_h = self.base_image.get_height()
 
         while x_offset < self.screen_width * 2:
-            sf  = random.uniform(0.9, 1.25)
+            sf  = random.uniform(1.0, 1.2)
             img = pygame.transform.scale(self.base_image,
                                          (int(base_w * sf), int(base_h * sf)))
             img = pygame.transform.flip(img, random.choice([True, False]), False)

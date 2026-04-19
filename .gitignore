@@ -6,3 +6,5 @@ test.txt
 *.psd
 *.json
 *.csv
+*.zip
+*.rar

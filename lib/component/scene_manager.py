@@ -1,6 +1,7 @@
 import os
 import json
 import pygame
+import random
 from lib.component.scene_menu import MenuScene
 from lib.component.scene_gameplay import GameplayScene
 from lib.component.scene_stats import StatsScene
@@ -39,7 +40,7 @@ class SceneManager:
             save_data = self._load_save()
             self.scenes["gameplay"].restore_from_save(save_data)
             try:
-                pygame.mixer.music.load(os.path.join("lib", "sfx", "forest_ambient.mp3"))
+                pygame.mixer.music.load(os.path.join("lib", "sfx", f"{Config.ambient}_{random.randint(1, Config.ambient_var)}.mp3"))
                 pygame.mixer.music.set_volume(Config.ambient_volume / 100)
                 pygame.mixer.music.play(-1)
             except Exception:

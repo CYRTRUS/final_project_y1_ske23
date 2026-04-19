@@ -1,5 +1,6 @@
 import os
 import pygame
+import random
 from lib.component.scene_base import BaseScene
 from lib.component.button import Button
 from lib.component.board import Board
@@ -15,10 +16,8 @@ class GameplayScene(BaseScene):
         super().__init__(screen, switch_scene_callback)
 
         if GameplayScene.noti_sound is None:
-            GameplayScene.noti_sound = pygame.mixer.Sound(
-                os.path.join("lib", "sfx", "noti_sound.mp3")
-            )
-            GameplayScene.noti_sound.set_volume(Config.noti_volume/100)
+            GameplayScene.noti_sound = pygame.mixer.Sound(os.path.join("lib", "sfx", f"{Config.notify}_{random.randint(1, Config.notify_var)}.mp3"))
+            GameplayScene.noti_sound.set_volume(Config.noti_volume / 100)
 
         self.player = player
         self.enemy = enemy
@@ -30,11 +29,7 @@ class GameplayScene(BaseScene):
         self._last_reroll_lvl = 0
         self.leveling_up = False
         self._show_help = False
-
-        # Track last valid word so sound only plays on change
         self._last_valid_word = ""
-
-        # True while player is attacking (draw enemy first so player appears on top)
         self.player_turn_over = True
 
         self.death_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 90)
@@ -43,39 +38,19 @@ class GameplayScene(BaseScene):
         self.help_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 18)
         self.help_title_font = pygame.font.Font("lib/font/minercraftory.regular.ttf", 30)
 
-        self.attack_button = Button(
-            675, 425, 250, 75, "Attack",
-            self._try_attack, click_sound, font_size=36, color=(120, 120, 120)
-        )
-        self.hint_button = Button(
-            20, 730, 150, 50, "Hint",
-            self._use_hint, click_sound, font_size=24, color=(80, 80, 200)
-        )
-        self.reroll_button = Button(
-            1270, 730, 150, 50, "Reroll",
-            self._use_reroll, click_sound, font_size=24, color=(160, 100, 20)
-        )
-        self.help_button = Button(
-            180, 730, 200, 50, "How to Play",
-            self._toggle_help, click_sound, font_size=22, color=(40, 120, 40)
-        )
+        self.attack_button = Button(675, 425, 250, 75, "Attack", self._try_attack, click_sound, font_size=36, color=(120, 120, 120))
+        self.hint_button = Button(20, 730, 150, 50, "Hint", self._use_hint, click_sound, font_size=24, color=(80, 80, 200))
+        self.reroll_button = Button(1270, 730, 150, 50, "Reroll", self._use_reroll, click_sound, font_size=24, color=(160, 100, 20))
+        self.help_button = Button(180, 730, 200, 50, "How to Play", self._toggle_help, click_sound, font_size=22, color=(40, 120, 40))
 
         def _back():
-            self.game.data_collector.log_program_closed(
-                getattr(self.game, "current_level", 1)
-            )
+            self.game.data_collector.log_program_closed(getattr(self.game, "current_level", 1))
             self.game.data_collector.save_game(self.game)
             self.switch_scene_callback("menu")
 
-        self.back_button = Button(
-            1430, 730, 150, 50, "Back",
-            _back, click_sound, color=(200, 50, 50)
-        )
+        self.back_button = Button(1430, 730, 150, 50, "Back", _back, click_sound, color=(200, 50, 50))
 
-        self.buttons = [
-            self.back_button, self.attack_button,
-            self.hint_button, self.reroll_button, self.help_button
-        ]
+        self.buttons = [self.back_button, self.attack_button, self.hint_button, self.reroll_button, self.help_button]
 
         board_path = os.path.join("lib", "asset", "board.png")
         original = pygame.image.load(board_path).convert_alpha()
@@ -86,11 +61,7 @@ class GameplayScene(BaseScene):
         self.board_x = self.width // 2 - rect.width // 2
         self.board_y = self.height - rect.height
 
-        self.board = Board(
-            self.width, self.height,
-            self.board_x, self.board_y, rect.width, rect.height,
-            self.click_sound, self.game
-        )
+        self.board = Board(self.width, self.height, self.board_x, self.board_y, rect.width, rect.height, self.click_sound, self.game)
 
     def restore_from_save(self, save_data):
         self.rerolls = save_data.get("player_rerolls", Config.max_reroll)
@@ -121,10 +92,7 @@ class GameplayScene(BaseScene):
         if self.board.is_current_word_valid():
             self.attack_locked = True
             self.player_turn_over = True
-
-            # Reset so next valid word can trigger sound again
             self._last_valid_word = ""
-
             self.board.attack(on_complete=self._on_player_anim_done)
 
     def _on_player_anim_done(self):
@@ -139,9 +107,7 @@ class GameplayScene(BaseScene):
 
         if enemy.frozen_turns > 0:
             enemy.frozen_turns -= 1
-            enemy.frozen_turns = max(enemy.frozen_turns, 0)
-            if enemy.frozen_turns == 0:
-                enemy.hp_bar.override_color = None  # clear blue tint when freeze ends
+            enemy._update_hp_bar_color()
             self.attack_locked = False
             self.player_turn_over = False
             return
@@ -199,18 +165,13 @@ class GameplayScene(BaseScene):
         current_word = self.board.get_current_word()
         is_valid = self.board.is_current_word_valid()
 
-        # Play sound when word becomes valid or changes to another valid word
         if is_valid:
             self.attack_button.set_color((50, 200, 80))
-
             if GameplayScene.noti_sound and current_word != self._last_valid_word:
                 GameplayScene.noti_sound.play()
                 self._last_valid_word = current_word
-
         else:
             self.attack_button.set_color((80, 80, 80))
-
-            # Reset so next valid word will trigger sound
             self._last_valid_word = ""
 
         self.reroll_button.text = f"Reroll ({self.rerolls})"
@@ -219,7 +180,6 @@ class GameplayScene(BaseScene):
     def draw(self):
         self.draw_background()
 
-        # Draw order: when player is attacking, draw enemy first so player appears on top
         if self.player_turn_over:
             self.game.enemy.draw(self.screen)
             self.game.player.draw(self.screen)
@@ -295,13 +255,13 @@ class GameplayScene(BaseScene):
         draw_line("TILE ABILITIES", (255, 220, 80), section_y, self.help_title_font)
 
         ability_info = [
-            ("n", "Normal - no bonus"),
-            ("g", "Green - heals you for 10 percent of your max HP per tile"),
-            ("o", "Orange - add 25 percent damage multiplier"),
-            ("r", "Red - add 50 percent damage multiplier"),
-            ("w", "Gray - add 100 percent damage multiplier"),
-            ("b", "Blue - freezes enemy for 1 turn (skip their attack)"),
-            ("p", "Purple - weakens enemy for 1 turn (reduces enemy damage by 50 percent)"),
+            ("n",      "Normal - no bonus"),
+            ("green",  "Green - heals you for 10 percent of your max HP per tile"),
+            ("orange", "Orange - add 25 percent damage multiplier"),
+            ("red",    "Red - add 50 percent damage multiplier"),
+            ("gray",   "Gray - add 100 percent damage multiplier"),
+            ("blue",   "Blue - freezes enemy for 1 turn (skip their attack)"),
+            ("purple", "Purple - weakens enemy for 1 turn (reduces enemy damage by 50 percent)"),
         ]
         dot_size = 16
         row_h = line_h

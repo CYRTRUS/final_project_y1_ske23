@@ -1,5 +1,6 @@
 import pygame
 import os
+import random
 from lib.component.scene_manager import SceneManager
 from lib.component.scene_gameplay import GameplayScene
 from lib.component.player import Player
@@ -18,7 +19,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
-        self.click_sound = pygame.mixer.Sound(os.path.join("lib", "sfx", "minecraft_click.mp3"))
+        self.click_sound = pygame.mixer.Sound(os.path.join("lib", "sfx", f"{Config.btn_click}_{random.randint(1, Config.btn_click_var)}.mp3"))
         self.click_sound.set_volume(Config.click_volume / 100)
 
         self.data_collector = DataCollection()
@@ -42,6 +43,18 @@ class Game:
         self.player = Player(self, health=save.get("player_health"), score=save.get("player_score", 0))
         self.player.set_level(self.current_level)
         self.enemy = Enemy(self, self.current_level, health=save.get("enemy_health"))
+
+        # Restore debuffs
+        player_debuffs = save.get("player_debuffs", {})
+        self.player.frozen_turns = player_debuffs.get("blue", 0)
+        self.player.weakened_turns = player_debuffs.get("purple", 0)
+        self.player._update_hp_bar_color()
+
+        enemy_debuffs = save.get("enemy_debuffs", {})
+        self.enemy.frozen_turns = enemy_debuffs.get("blue", 0)
+        self.enemy.weakened_turns = enemy_debuffs.get("purple", 0)
+        self.enemy._update_hp_bar_color()
+
         self.scene_manager = SceneManager(
             self.screen, self.switch_scene, self.quit_game,
             self.click_sound, self.player, self.enemy, self.data_collector, self
@@ -51,8 +64,12 @@ class Game:
             gameplay.restore_from_save(save)
 
     def switch_scene(self, name):
-        if name == "gameplay" and self.player._is_dead:
-            self._start_fresh()
+        if name == "gameplay":
+            if self.player._is_dead:
+                self._start_fresh()
+            elif not self.data_collector.load_game():
+                # Save was deleted (e.g. via Reset Game) - start a fresh run
+                self._start_fresh()
         self.scene_manager.switch_scene(name)
 
     def _start_fresh(self):
@@ -67,7 +84,6 @@ class Game:
         self.data_collector.save_game(self)
 
     def reset_to_level1(self):
-        """Reset in-memory state to level 1 (called after stats reset)."""
         self.current_level = 1
         self.player = Player(self)
         self.enemy = Enemy(self, 1)
@@ -100,3 +116,9 @@ class Game:
             pygame.display.flip()
             self.clock.tick(60)
         pygame.quit()
+        # Shut down the stats window cleanly if it is open
+        try:
+            from lib.component.stats_window import StatsWindow
+            StatsWindow.shutdown()
+        except Exception:
+            pass
