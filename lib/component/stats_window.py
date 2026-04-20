@@ -43,6 +43,7 @@ TEXT = "#eaeaea"
 TEXT_DIM = "#8888aa"
 GOLD = "#f5c518"
 GRID_COLOR = "#2a2a4a"
+CHART_BG = "#16213e"
 FONT_TITLE = ("Consolas", 13, "bold")
 FONT_BODY = ("Consolas", 11)
 FONT_SMALL = ("Consolas", 9)
@@ -50,8 +51,8 @@ FONT_SMALL = ("Consolas", 9)
 STAT_CHOICES = [
     "Tile Clicks Over Time (Line)",
     "Words Created by Length (Table)",
-    "Damage Dealt Distribution (Histogram)",
-    "Word Length Spread (Boxplot)",
+    "Damage Dealt Distribution (Boxplot)",
+    "Word Length Spread (Histogram)",
     "Time to Beat Level (Bar)",
 ]
 
@@ -59,7 +60,7 @@ STAT_CHOICES = [
 # helpers
 
 def _style_axes(ax):
-    ax.set_facecolor(PANEL)
+    ax.set_facecolor(CHART_BG)
     ax.tick_params(colors=TEXT_DIM, labelsize=9)
     ax.xaxis.label.set_color(TEXT_DIM)
     ax.yaxis.label.set_color(TEXT_DIM)
@@ -122,11 +123,17 @@ class StatsWindow:
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
         self._build_toolbar()
+        self._build_infobar()
         self._build_canvas_area()
-        self._build_footer()
+        self._build_strip()
 
         # force initial draw
         self.root.after(100, self._refresh)
+
+    # decorative bottom strip
+
+    def _build_strip(self):
+        tk.Frame(self.root, bg=ACCENT2, height=6).pack(fill="x", side="bottom")
 
     # toolbar
     def _build_toolbar(self):
@@ -171,11 +178,11 @@ class StatsWindow:
         self._canvas_widget = None
         self._fig = None
 
-    # footer
+    # info bar (between toolbar and chart)
 
-    def _build_footer(self):
+    def _build_infobar(self):
         foot = tk.Frame(self.root, bg=PANEL, pady=5, padx=12)
-        foot.pack(fill="x", side="bottom")
+        foot.pack(fill="x")
 
         tk.Label(foot, text="Data source: lib/stats/log_1.csv",
                  bg=PANEL, fg=TEXT_DIM, font=FONT_SMALL).pack(side="left")
@@ -211,9 +218,9 @@ class StatsWindow:
             elif choice == STAT_CHOICES[1]:
                 self._draw_table(limit)
             elif choice == STAT_CHOICES[2]:
-                self._draw_histogram(limit)
-            elif choice == STAT_CHOICES[3]:
                 self._draw_boxplot(limit)
+            elif choice == STAT_CHOICES[3]:
+                self._draw_histogram(limit)
             elif choice == STAT_CHOICES[4]:
                 self._draw_bar(limit)
         except FileNotFoundError:
@@ -261,7 +268,7 @@ class StatsWindow:
 
         fig, ax = plt.subplots(figsize=(9, 5), dpi=96)
         fig.patch.set_facecolor(BG)
-        ax.set_facecolor(BG)
+        ax.set_facecolor(CHART_BG)
         ax.axis("off")
         ax.set_title("Words Created by Length", color=TEXT, pad=14,
                      fontsize=13, fontweight="bold")
@@ -272,14 +279,14 @@ class StatsWindow:
             self._embed(fig)
             return
 
-        col_labels = ["Length", "Count", "Example words"]
+        col_labels = ["Length", "Example words"]
         rows = []
         for length, words in data.items():
             unique = sorted(set(words))
             sample = ", ".join(unique[:8])
             if len(unique) > 8:
                 sample += f"  (+{len(unique)-8} more)"
-            rows.append([str(length), str(len(words)), sample])
+            rows.append([str(length), sample])
 
         tbl = ax.table(
             cellText=rows,
@@ -289,7 +296,7 @@ class StatsWindow:
         )
         tbl.auto_set_font_size(False)
         tbl.set_fontsize(10)
-        tbl.auto_set_column_width([0, 1, 2])
+        tbl.auto_set_column_width([0, 1])
 
         for (r, c), cell in tbl.get_celld().items():
             cell.set_edgecolor(GRID_COLOR)
@@ -302,31 +309,9 @@ class StatsWindow:
 
         self._embed(fig)
 
-    # 3. Histogram
+    # 3. Histogram (Word Length Spread)
 
     def _draw_histogram(self, limit):
-        data = get_damage_dealt(limit)
-        fig, ax = plt.subplots(figsize=(9, 5), dpi=96)
-        _style_axes(ax)
-
-        if not data:
-            ax.text(0.5, 0.5, "No damage data yet.", transform=ax.transAxes,
-                    ha="center", va="center", color=TEXT_DIM, fontsize=12)
-        else:
-            ax.hist(data, bins=20, color=ACCENT, edgecolor=BG, linewidth=0.6, alpha=0.9)
-            ax.set_xlabel("Damage dealt")
-            ax.set_ylabel("Frequency")
-            mean_v = sum(data) / len(data)
-            ax.axvline(mean_v, color=GOLD, linestyle="--", linewidth=1.4,
-                       label=f"Mean: {mean_v:.1f}")
-            ax.legend(facecolor=PANEL, edgecolor=GRID_COLOR, labelcolor=TEXT, fontsize=9)
-
-        ax.set_title("Damage Dealt Distribution")
-        self._embed(fig)
-
-    # 4. Boxplot
-
-    def _draw_boxplot(self, limit):
         data = get_word_length(limit)
         fig, ax = plt.subplots(figsize=(9, 5), dpi=96)
         _style_axes(ax)
@@ -335,25 +320,50 @@ class StatsWindow:
             ax.text(0.5, 0.5, "No word-length data yet.", transform=ax.transAxes,
                     ha="center", va="center", color=TEXT_DIM, fontsize=12)
         else:
-            bp = ax.boxplot(
+            ax.hist(data, bins=range(min(data), max(data) + 2), color=ACCENT,
+                    edgecolor=BG, linewidth=0.6, alpha=0.9, align="left")
+            ax.set_xlabel("Word length (letters)")
+            ax.set_ylabel("Frequency")
+            mean_v = sum(data) / len(data)
+            ax.axvline(mean_v, color=GOLD, linestyle="--", linewidth=1.4,
+                       label=f"Mean: {mean_v:.1f}")
+            ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
+            ax.legend(facecolor=PANEL, edgecolor=GRID_COLOR, labelcolor=TEXT, fontsize=9)
+
+        ax.set_title("Word Length Spread")
+        self._embed(fig)
+
+    # 4. Boxplot (Damage Dealt Distribution)
+
+    def _draw_boxplot(self, limit):
+        data = get_damage_dealt(limit)
+        fig, ax = plt.subplots(figsize=(9, 5), dpi=96)
+        _style_axes(ax)
+
+        if not data:
+            ax.text(0.5, 0.5, "No damage data yet.", transform=ax.transAxes,
+                    ha="center", va="center", color=TEXT_DIM, fontsize=12)
+            ax.set_title("Damage Dealt Distribution")
+        else:
+            ax.boxplot(
                 data, vert=True, patch_artist=True,
+                widths=0.55,
                 medianprops=dict(color=GOLD, linewidth=2),
                 boxprops=dict(facecolor=ACCENT2, color=ACCENT),
                 whiskerprops=dict(color=TEXT_DIM),
                 capprops=dict(color=TEXT_DIM),
                 flierprops=dict(marker="o", color=ACCENT, markersize=4, alpha=0.5)
             )
-            ax.set_ylabel("Word length (letters)")
+            ax.set_xlim(0.4, 1.6)
+            ax.set_ylabel("Damage dealt")
             ax.set_xticks([1])
-            ax.set_xticklabels(["All words"])
+            ax.set_xticklabels(["All attacks"])
             n = len(data)
             mn = min(data)
             mx = max(data)
             med = sorted(data)[n // 2]
-            ax.set_title(f"Word Length Spread  (n={n}, min={mn}, med={med}, max={mx})")
+            ax.set_title(f"Damage Dealt Distribution  (n={n}, min={mn:.0f}, med={med:.0f}, max={mx:.0f})")
 
-        if not data:
-            ax.set_title("Word Length Spread")
         self._embed(fig)
 
     # 5. Bar

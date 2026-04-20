@@ -1,0 +1,3 @@
+# Requires Python >= 3.9
+pygame-ce>=2.5.0
+matplotlib>=3.7.0
