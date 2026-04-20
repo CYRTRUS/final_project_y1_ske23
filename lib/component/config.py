@@ -10,7 +10,7 @@ class Config:
 
     # HP  formula: max_hp  = base_hp  + factor_hp  * (level - 1)
     # DMG formula: atk_dmg = base_dmg + factor_dmg * (level - 1)
-    enemy_base_hp = 20
+    enemy_base_hp = 15
     enemy_factor_hp = 5
     enemy_base_dmg = 2
     enemy_factor_dmg = 0.3
@@ -44,7 +44,7 @@ class Config:
     player_ability_max = 15
 
     enemy_ability_weights_base = {
-        "n": 70, "green": 5, "blue": 1, "purple": 2
+        "n": 100, "green": 5, "blue": 1, "purple": 2
     }
     enemy_ability_max = 10
 
