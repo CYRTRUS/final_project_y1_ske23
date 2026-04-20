@@ -28,7 +28,7 @@ def _read_rows(limit=None):
 
 def get_tile_clicked(limit=None):
     """Tile Clicking bucketed every 20s - Line graph data."""
-    rows = _read_rows(limit)
+    rows = _read_rows()
     base_time = None
     prev_time = None
     num = 0
@@ -63,29 +63,41 @@ def get_tile_clicked(limit=None):
     if num > 0:
         tile_clicked_num.append(num)
 
-    return tile_clicked_num
+    if limit is None:
+        return tile_clicked_num
+    else:
+        return tile_clicked_num[:limit]
 
 
 def get_word_created(limit=None):
     """Words Created grouped by length - Table data."""
-    rows = _read_rows(limit)
+    rows = _read_rows()
     word_created = {}
+
+    if limit is None:
+        limit = 9999999
+    num_word = 0
 
     for row in rows:
         word = row[3]
-        if word != "":
-            length = len(word)
-            if length not in word_created:
-                word_created[length] = [word]
-            else:
-                word_created[length].append(word)
+        if num_word < limit:
+            if word != "":
+                length = len(word)
+                if length not in word_created:
+                    word_created[length] = [word]
+                    num_word += 1
+                else:
+                    word_created[length].append(word)
+                    num_word += 1
+        else:
+            break
 
     return dict(sorted(word_created.items()))
 
 
 def get_damage_dealt(limit=None):
     """Damage Dealt - Histogram data (list of float values)."""
-    rows = _read_rows(limit)
+    rows = _read_rows()
     damage_dealt = []
 
     for row in rows:
@@ -95,12 +107,15 @@ def get_damage_dealt(limit=None):
             except ValueError:
                 pass
 
-    return damage_dealt
+    if limit is None:
+        return damage_dealt
+    else:
+        return damage_dealt[:limit]
 
 
 def get_word_length(limit=None):
     """Word lengths - Boxplot data (list of ints)."""
-    rows = _read_rows(limit)
+    rows = _read_rows()
     word_length = []
 
     for row in rows:
@@ -108,40 +123,51 @@ def get_word_length(limit=None):
         if word != "":
             word_length.append(len(word))
 
-    return word_length
+    if limit is None:
+        return word_length
+    else:
+        return word_length[:limit]
 
 
 def get_beat_time(limit=None):
     """Time to Complete Level - Bar graph data."""
-    rows = _read_rows(limit)
+    rows = _read_rows()
     beat_time = {"less_than_1": 0, "1_to_3": 0, "more_than_3": 0}
     prev_level = None
     prev_time = None
+    num_beat = 0
+
+    if limit is None:
+        limit = 9999999
 
     for row in rows:
-        curr_level = row[5]
-        try:
-            curr_time = parse_time(row[0])
-        except Exception:
-            continue
+        if num_beat < limit:
+            curr_level = row[5]
+            try:
+                curr_time = parse_time(row[0])
+            except Exception:
+                continue
 
-        if prev_level is None:
-            prev_level = curr_level
-            prev_time = curr_time
-            continue
+            if prev_level is None:
+                prev_level = curr_level
+                prev_time = curr_time
+                continue
 
-        if curr_level != prev_level:
-            diff = curr_time - prev_time  # type: ignore
-            minutes = diff / 60
+            if curr_level != prev_level:
+                diff = curr_time - prev_time  # type: ignore
+                minutes = diff / 60
 
-            if minutes < 1:
-                beat_time["less_than_1"] += 1
-            elif minutes <= 3:
-                beat_time["1_to_3"] += 1
-            else:
-                beat_time["more_than_3"] += 1
+                if minutes < 1:
+                    beat_time["less_than_1"] += 1
+                elif minutes <= 3:
+                    beat_time["1_to_3"] += 1
+                else:
+                    beat_time["more_than_3"] += 1
 
-            prev_time = curr_time
-            prev_level = curr_level
+                num_beat += 1
+                prev_time = curr_time
+                prev_level = curr_level
+        else:
+            break
 
     return beat_time

@@ -34,6 +34,19 @@ def _safe_var_del(self):
 
 _tk_mod.Variable.__del__ = _safe_var_del
 
+
+_orig_image_del = _tk_mod.Image.__del__
+
+
+def _safe_image_del(self):
+    try:
+        _orig_image_del(self)
+    except RuntimeError:
+        pass
+
+
+_tk_mod.Image.__del__ = _safe_image_del
+
 # palette
 BG = "#1a1a2e"
 PANEL = "#16213e"
@@ -43,7 +56,7 @@ TEXT = "#eaeaea"
 TEXT_DIM = "#8888aa"
 GOLD = "#f5c518"
 GRID_COLOR = "#2a2a4a"
-CHART_BG = "#16213e"
+CHART_BG   = "#16213e"
 FONT_TITLE = ("Consolas", 13, "bold")
 FONT_BODY = ("Consolas", 11)
 FONT_SMALL = ("Consolas", 9)
@@ -239,7 +252,7 @@ class StatsWindow:
         canvas.get_tk_widget().pack(fill="both", expand=True)
         self._canvas_widget = canvas
 
-    # 1. Line graph
+    # 1. Line graph (Tile clicked)
 
     def _draw_line(self, limit):
         data = get_tile_clicked(limit)
@@ -261,7 +274,7 @@ class StatsWindow:
         ax.set_title("Tile Clicks Over Time")
         self._embed(fig)
 
-    # 2. Table
+    # 2. Table (Word created)
 
     def _draw_table(self, limit):
         data = get_word_created(limit)
@@ -366,7 +379,7 @@ class StatsWindow:
 
         self._embed(fig)
 
-    # 5. Bar
+    # 5. Bar (Time taken to beat 1 level)
 
     def _draw_bar(self, limit):
         data = get_beat_time(limit)
