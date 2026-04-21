@@ -105,9 +105,9 @@ class Player:
     def _update_hp_bar_color(self):
         # Purple is drawn first, blue overrides (blue has higher priority)
         if self.weakened_turns > 0:
-            self.hp_bar.override_color = (160, 60, 220)
+            self.hp_bar.override_color = (160, 60, 220) # type: ignore
         if self.frozen_turns > 0:
-            self.hp_bar.override_color = (60, 120, 240)
+            self.hp_bar.override_color = (60, 120, 240) # type: ignore
         if self.weakened_turns == 0 and self.frozen_turns == 0:
             self.hp_bar.override_color = None
 
@@ -264,7 +264,8 @@ class Player:
             _play_sfx(Config.weaken, Config.weaken_var)
 
         # If word contains x, y, z or ends with r, y, es, or {none_vowel}s will dealt more damgae
-        mult *= 1.05**(word.count("x") + word.count("y") + word.count("z") + word.endswith("r") + word.endswith("y") + word.endswith("es") + (word.endswith("s") and word[-2] not in "aeiou"))
+        mult *= 1.05**(word.count("x") + word.count("y") + word.count("z") + word.endswith("r") +
+                       word.endswith("y") + word.endswith("es") + (word.endswith("s") and word[-2] not in "aeiou"))
 
         # Calculate damage boost
         if orange_count > 0:
@@ -286,6 +287,12 @@ class Player:
             self._update_hp_bar_color()
 
         dmg = max(0, math.ceil(base_dmg * mult))
+
+        # Easter egg
+        for e_w in ["nigg", "plummet"]:
+            if e_w in word:
+                dmg = 1000000000
+
         self.game.enemy.receive_damage(dmg)
         self.score += len(word)
         self.words_created.append(word)

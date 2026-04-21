@@ -95,14 +95,14 @@ class Enemy:
         self.hint_y_offset = -60
         self.hint_font_size = 26
         self.hint_shadow = (2, 2)
-        self.hint_text = EffectText("lib/font/minercraftory.regular.ttf", self.hint_font_size, self.hint_shadow, duration=None)
+        self.hint_text = EffectText("lib/font/minercraftory.regular.ttf", self.hint_font_size, self.hint_shadow, duration=None) # type: ignore
 
     def _update_hp_bar_color(self):
         # Purple is drawn first, blue overrides (blue has higher priority)
         if self.weakened_turns > 0:
-            self.hp_bar.override_color = (160, 60, 220)
+            self.hp_bar.override_color = (160, 60, 220) # type: ignore
         if self.frozen_turns > 0:
-                self.hp_bar.override_color = (60, 120, 240)
+                self.hp_bar.override_color = (60, 120, 240) # type: ignore
         if self.weakened_turns == 0 and self.frozen_turns == 0:
             self.hp_bar.override_color = None
 
