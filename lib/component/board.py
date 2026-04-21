@@ -61,9 +61,12 @@ class Board:
             if length not in self.word_data:
                 continue
             for l in set(bc):
-                for w in self.word_data[length][l]:
-                    if not (Counter(w) - bc):
-                        return w
+                try:
+                    for w in self.word_data[length][l]:
+                        if not (Counter(w) - bc):
+                            return w
+                except KeyError:
+                    continue
         return ""
 
     def generate_valid_board(self):
