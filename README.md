@@ -143,3 +143,4 @@ Acknowledge to:
 1. All Sound effects, <https://pixabay.com/sound-effects/> [SFX]
 2. All Textures, <https://itch.io/game-assets/tag-pixel-art> [Texture]
 3. Word library, <https://github.com/dwyl/english-words> [Word validation database]
+4. Minecraftory Font, <https://www.dafont.com/minercraftory.font> [Font]
