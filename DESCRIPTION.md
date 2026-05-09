@@ -52,6 +52,8 @@ Define the goals of the system.
 
 [WordForge UML Class Diagram](WordForge_UML_Class_Diagram.pdf)
 
+![WordForge UML Class Diagram](WordForge_UML_Class_Diagram.png)
+
 ---
 
 ## 4. Object-Oriented Programming Implementation
@@ -159,7 +161,9 @@ Each completed level is categorized into one of three time bands: under 1 minute
 
 ## 6. Changed Proposed Features
 
-Changed collected data visualization methods from:
+Changed collected data visualization methods
+
+From:
 
 1. Tile Clicking (every 20s) (Line Graph)
 2. Words Created (by length) (Table)

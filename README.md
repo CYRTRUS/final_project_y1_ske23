@@ -130,12 +130,6 @@ The game logs your performance data throughout a run. A built-in statistics wind
 
 ---
 
-## Unfinished Works
-
-- None
-
----
-
 ## External sources
 
 Acknowledge to:
