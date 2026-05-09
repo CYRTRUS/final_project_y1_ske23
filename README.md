@@ -63,7 +63,7 @@ Survive as many levels as possible by defeating enemies with words. Each level i
 
 ### How to Play
 
-1. **Select tiles** - Click letter tiles on the 4×4 board to build a word. Selected tiles appear at the top of the screen. Click a tile again to deselect it (and all tiles selected after it).
+1. **Select tiles** - Click letter tiles on the 4*4 board to build a word. Selected tiles appear at the top of the screen. Click a tile again to deselect it (and all tiles selected after it).
 2. **Form a valid word** - The Attack button turns green when your current selection forms a valid word. Words must be at least 2 letters or longer.
 3. **Attack** - Click the green Attack button to send your word and deal damage to the enemy. Damage scales with word length and your current level.
 4. **Enemy counterattack** - After your attack, the enemy strikes back. Survive their hit and keep building words until the enemy's HP reaches zero.
@@ -78,7 +78,7 @@ Survive as many levels as possible by defeating enemies with words. Each level i
 
 ### Damage Formula
 
-Base damage is calculated as `(word length × ceil(level ^ 0.55)) + 3`, then multiplied by any tile ability bonuses. Longer words and boosted tiles hit much harder at higher levels.
+Base damage is calculated as `(word length * ceil(level ^ 0.55)) + 3`, then multiplied by any tile ability bonuses. Longer words and boosted tiles hit much harder at higher levels.
 
 ---
 
@@ -92,9 +92,9 @@ Colored tiles on your board grant special effects when included in a word:
 | --- | --- |
 | **White** (Normal) | No bonus |
 | **Green** | Heals you for 10% of your max HP per green tile used |
-| **Orange** | Adds a ×1.25 damage multiplier per tile |
-| **Red** | Adds a ×1.50 damage multiplier per tile |
-| **Gray** | Adds a ×2.00 damage multiplier per tile |
+| **Orange** | Adds a *1.25 damage multiplier per tile |
+| **Red** | Adds a *1.50 damage multiplier per tile |
+| **Gray** | Adds a *2.00 damage multiplier per tile |
 | **Blue** | Freezes the enemy for 1 turn, causing them to skip their next counterattack |
 | **Purple** | Weakens the enemy for 1 turn, reducing their attack damage by 50% |
 
