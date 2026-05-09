@@ -11,7 +11,7 @@ This project is a word-puzzle battle game inspired by Bookworm Adventures, in wh
 
 ## Installation
 
-To Clone this project:
+Open terminal and clone this project:
 
 ```sh
 git clone https://github.com/CYRTRUS/final_project_y1_ske23
