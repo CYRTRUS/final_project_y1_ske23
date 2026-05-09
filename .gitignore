@@ -1,4 +1,6 @@
 __pycache__/
+.venv/
+.vscode/
 src/
 tempCodeRunnerFile.py
 test.py
