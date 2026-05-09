@@ -22,6 +22,7 @@ To create and run Python Environment for This project:
 Window:
 
 ```bat
+cd final_project_y1_ske23
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
@@ -30,6 +31,7 @@ pip install -r requirements.txt
 Mac:
 
 ```sh
+cd final_project_y1_ske23
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
