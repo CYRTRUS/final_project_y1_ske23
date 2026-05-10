@@ -186,7 +186,7 @@ Due to the difficulty of the original collection methods and visualization appro
 
 ## 7. Youtube Video
 
-[![Video](https://img.youtube.com/vi/Y0cGx2pQCyw/0.jpg)](https://youtu.be/Y0cGx2pQCyw)
+[![Watch the video](https://img.youtube.com/vi/Y0cGx2pQCyw/maxresdefault.jpg)](https://youtu.be/Y0cGx2pQCyw)
 
 ---
 
