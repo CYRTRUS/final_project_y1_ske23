@@ -2,6 +2,7 @@ __pycache__/
 .venv/
 .vscode/
 src/
+video/
 tempCodeRunnerFile.py
 test.py
 test.txt
