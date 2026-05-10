@@ -22,6 +22,17 @@ Provide a high-level understanding of the project.
   - Reroll and Hint mechanics
   - Infinite levels
 
+- **Screenshots:**
+![001](/screenshots/gameplay/gameplay_001.png)
+![002](/screenshots/gameplay/gameplay_002.png)
+![003](/screenshots/gameplay/gameplay_003.png)
+
+- **Proposal:**
+  - [Game Project Proposal](Programming%202%20(Project%20requirement%20and%20Proposal)%206810545905%20Final.pdf)
+
+- **Youtube:**
+[![Watch the video](https://img.youtube.com/vi/Y0cGx2pQCyw/maxresdefault.jpg)](https://youtu.be/Y0cGx2pQCyw)
+
 ---
 
 ## 2. Concept
@@ -184,13 +195,7 @@ Due to the difficulty of the original collection methods and visualization appro
 
 ---
 
-## 7. Youtube Video
-
-[![Watch the video](https://img.youtube.com/vi/Y0cGx2pQCyw/maxresdefault.jpg)](https://youtu.be/Y0cGx2pQCyw)
-
----
-
-## 8. External Sources
+## 7. External Sources
 
 Acknowledge to:
 
