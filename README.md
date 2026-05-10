@@ -11,7 +11,9 @@ This project is a word-puzzle battle game inspired by Bookworm Adventures, in wh
 
 ## Installation
 
-Open terminal and clone this project:
+Requirement: Python >= 3.14.x
+
+Open command prompt and clone this project:
 
 ```sh
 git clone https://github.com/CYRTRUS/final_project_y1_ske23
