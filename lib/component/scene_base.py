@@ -1,22 +1,30 @@
+import random
+from lib.component import assets
 from lib.component.layer import Layer
-import random as rd
+
+MENU_RED = (200, 50, 50)
 
 
 class BaseScene:
+    """A screen of the game. Subclasses override the hooks they need."""
 
-    def __init__(self, screen, switch_scene_callback):
-        self.screen = screen
-        self.switch_scene_callback = switch_scene_callback
-        self.width = screen.get_width()
-        self.height = screen.get_height()
-
-        self.layers = [
-            Layer("back.png",   self.width, self.height, x=rd.randint(-200, 0), y=-250),
-            Layer("far.png",    self.width, self.height, x=rd.randint(-200, 0), y=-250),
-            Layer("middle.png", self.width, self.height, x=rd.randint(-100, 0), y=-250, random_scale=True),
-            Layer("front.png",  self.width, self.height, x=rd.randint(-200, 0), y=int(self.height * 0.48), height_scale=0.6),
-        ]
+    def __init__(self, game):
+        self.game = game
+        self.screen = game.screen
+        self.width, self.height = self.screen.get_size()
+        self.click_sound = game.click_sound
         self.buttons = []
+        self.layers = [
+            Layer("back.png",   self.width, self.height, x=random.randint(-200, 0), y=-250),
+            Layer("far.png",    self.width, self.height, x=random.randint(-200, 0), y=-250),
+            Layer("middle.png", self.width, self.height, x=random.randint(-100, 0), y=-250, random_scale=True),
+            Layer("front.png",  self.width, self.height, x=random.randint(-200, 0),
+                  y=int(self.height * 0.48), height_scale=0.6),
+        ]
+
+    def on_enter(self):
+        """Called every time the scene becomes the current one."""
+        assets.stop_music()
 
     def handle_event(self, event):
         for button in self.buttons:
@@ -29,7 +37,10 @@ class BaseScene:
         for layer in self.layers:
             layer.draw(self.screen)
 
-    def draw(self):
-        self.draw_background()
+    def draw_buttons(self):
         for button in self.buttons:
             button.draw(self.screen)
+
+    def draw(self):
+        self.draw_background()
+        self.draw_buttons()

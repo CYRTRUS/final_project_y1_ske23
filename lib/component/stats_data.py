@@ -1,173 +1,117 @@
+"""Read the gameplay CSV log and shape it for each stats chart."""
 import csv
 import time
+from collections import defaultdict
 from lib.component.config import Config
+from lib.component.data_collection import TIMESTAMP_FORMAT
 
-FILE_PATH = f"lib/stats/{Config.log_filename}"
-TIME_INTERVAL = 20
+FILE_PATH = Config.log_path
+TIME_INTERVAL = 20      # seconds per tile-click bucket
 
 
 def parse_time(ts):
-    return time.mktime(time.strptime(ts, "%Y%m%d_%H%M%S"))
+    return time.mktime(time.strptime(ts, TIMESTAMP_FORMAT))
 
 
-def _read_rows(limit=None):
-    """Read CSV rows, skipping header. Optionally limit to first N data rows."""
-    rows = []
+def _read_rows():
     try:
         with open(FILE_PATH, newline="") as f:
-            reader = csv.reader(f)
-            next(reader)  # skip header
-            for row in reader:
-                rows.append(row)
-                if limit is not None and len(rows) >= limit:
-                    break
+            return [{k: (v or "") for k, v in row.items()} for row in csv.DictReader(f)]
     except FileNotFoundError:
-        pass
-    return rows
+        return []
+
+
+def _head(values, limit):
+    return values if limit is None else values[:limit]
+
+
+def _words(rows):
+    return [row["created_word"] for row in rows if row["created_word"]]
 
 
 def get_tile_clicked(limit=None):
-    """Tile Clicking bucketed every 20s - Line graph data."""
-    rows = _read_rows()
-    base_time = None
-    prev_time = None
-    num = 0
-    tile_clicked_num = []
+    """Tile clicks per TIME_INTERVAL bucket (line graph). Long pauses start a new bucket."""
+    buckets = []
+    bucket_start = prev_time = None
+    count = 0
 
-    for row in rows:
-        if not row[1] or row[1] != "True":
+    for row in _read_rows():
+        if row["tile_clicked"] != "True":
             continue
+        now = parse_time(row["timestamp"])
+        if bucket_start is None:
+            bucket_start = prev_time = now
 
-        curr_time = parse_time(row[0])
-
-        if base_time is None:
-            base_time = curr_time
-            prev_time = curr_time
-
-        gap = curr_time - prev_time  # type: ignore
-
+        gap = now - prev_time
         if gap > TIME_INTERVAL or gap < 0:
-            tile_clicked_num.append(num)
-            base_time = curr_time
-            num = 0
+            buckets.append(count)
+            bucket_start, count = now, 0
 
-        if curr_time - base_time < TIME_INTERVAL:
-            num += 1
+        if now - bucket_start < TIME_INTERVAL:
+            count += 1
         else:
-            tile_clicked_num.append(num)
-            base_time = curr_time
-            num = 1
+            buckets.append(count)
+            bucket_start, count = now, 1
+        prev_time = now
 
-        prev_time = curr_time
-
-    if num > 0:
-        tile_clicked_num.append(num)
-
-    if limit is None:
-        return tile_clicked_num
-    else:
-        return tile_clicked_num[:limit]
+    if count > 0:
+        buckets.append(count)
+    return _head(buckets, limit)
 
 
 def get_word_created(limit=None):
-    """Words Created grouped by length - Table data."""
-    rows = _read_rows()
-    word_created = {}
-
-    if limit is None:
-        limit = 9999999
-    num_word = 0
-
-    for row in rows:
-        word = row[3]
-        if num_word < limit:
-            if word != "":
-                length = len(word)
-                if length not in word_created:
-                    word_created[length] = [word]
-                    num_word += 1
-                else:
-                    word_created[length].append(word)
-                    num_word += 1
-        else:
-            break
-
-    return dict(sorted(word_created.items()))
+    """{word length: [words]} for the first `limit` words (table)."""
+    grouped = defaultdict(list)
+    for word in _head(_words(_read_rows()), limit):
+        grouped[len(word)].append(word)
+    return dict(sorted(grouped.items()))
 
 
 def get_damage_dealt(limit=None):
-    """Damage Dealt - Histogram data (list of float values)."""
-    rows = _read_rows()
-    damage_dealt = []
-
-    for row in rows:
-        if row[4] != "":
-            try:
-                damage_dealt.append(float(row[4]))
-            except ValueError:
-                pass
-
-    if limit is None:
-        return damage_dealt
-    else:
-        return damage_dealt[:limit]
+    """Every damage value dealt by the player (boxplot)."""
+    values = []
+    for row in _read_rows():
+        try:
+            values.append(float(row["damage_dealt"]))
+        except ValueError:
+            pass
+    return _head(values, limit)
 
 
 def get_word_length(limit=None):
-    """Word lengths - Boxplot data (list of ints)."""
-    rows = _read_rows()
-    word_length = []
-
-    for row in rows:
-        word = row[3]
-        if word != "":
-            word_length.append(len(word))
-
-    if limit is None:
-        return word_length
-    else:
-        return word_length[:limit]
+    """Length of every created word (histogram)."""
+    return _head([len(w) for w in _words(_read_rows())], limit)
 
 
 def get_beat_time(limit=None):
-    """Time to Complete Level - Bar graph data."""
-    rows = _read_rows()
+    """How many levels took <1, 1-3 or >3 minutes (bar graph)."""
     beat_time = {"less_than_1": 0, "1_to_3": 0, "more_than_3": 0}
-    prev_level = None
-    prev_time = None
-    num_beat = 0
+    prev_level = prev_time = None
+    beaten = 0
 
-    if limit is None:
-        limit = 9999999
-
-    for row in rows:
-        if num_beat < limit:
-            curr_level = row[5]
-            try:
-                curr_time = parse_time(row[0])
-            except Exception:
-                continue
-
-            if prev_level is None:
-                prev_level = curr_level
-                prev_time = curr_time
-                continue
-
-            if curr_level != prev_level:
-                diff = curr_time - prev_time  # type: ignore
-                minutes = diff / 60
-
-                if minutes < 1:
-                    beat_time["less_than_1"] += 1
-                elif minutes <= 3:
-                    beat_time["1_to_3"] += 1
-                else:
-                    beat_time["more_than_3"] += 1
-
-                num_beat += 1
-                prev_time = curr_time
-                prev_level = curr_level
-        else:
+    for row in _read_rows():
+        if limit is not None and beaten >= limit:
             break
+        try:
+            now = parse_time(row["timestamp"])
+        except ValueError:
+            continue
+        level = row["current_level"]
+
+        if prev_level is None:
+            prev_level, prev_time = level, now
+            continue
+        if level == prev_level:
+            continue
+
+        minutes = (now - prev_time) / 60
+        if minutes < 1:
+            beat_time["less_than_1"] += 1
+        elif minutes <= 3:
+            beat_time["1_to_3"] += 1
+        else:
+            beat_time["more_than_3"] += 1
+        beaten += 1
+        prev_level, prev_time = level, now
 
     return beat_time

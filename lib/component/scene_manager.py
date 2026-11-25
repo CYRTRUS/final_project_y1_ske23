@@ -1,59 +1,30 @@
-import os
-import json
-import pygame
-import random
-from lib.component.scene_menu import MenuScene
 from lib.component.scene_gameplay import GameplayScene
+from lib.component.scene_menu import MenuScene
 from lib.component.scene_stats import StatsScene
-from lib.component.config import Config
-
-
-SAVE_PATH = "game_save.json"
 
 
 class SceneManager:
-    def __init__(self, screen, switch_scene_callback, quit_callback, click_sound,
-                 player, enemy, data_collector, game):
-        self.screen = screen
+    def __init__(self, game):
         self.game = game
-
-        self.scenes = {}
-        self.scenes["menu"] = MenuScene(screen, switch_scene_callback, quit_callback, click_sound)
-        self.scenes["gameplay"] = GameplayScene(
-            screen, switch_scene_callback, click_sound, player, enemy, data_collector, game
-        )
-        self.scenes["stats"] = StatsScene(screen, switch_scene_callback, click_sound, game)
-
+        self.scenes = {
+            "menu": MenuScene(game),
+            "gameplay": GameplayScene(game),
+            "stats": StatsScene(game),
+        }
         self.current_scene = self.scenes["menu"]
 
-    def _load_save(self):
-        if not os.path.exists(SAVE_PATH):
-            return {}
-        try:
-            with open(SAVE_PATH, "r") as f:
-                return json.load(f)
-        except Exception:
-            return {}
+    @property
+    def gameplay(self):
+        return self.scenes["gameplay"]
+
+    def reset_gameplay(self):
+        """Replace the gameplay scene with a brand new one (fresh board, rerolls...)."""
+        self.scenes["gameplay"] = GameplayScene(self.game)
+        return self.scenes["gameplay"]
 
     def switch_scene(self, name):
-        if name == "gameplay":
-            save_data = self._load_save()
-            self.scenes["gameplay"].restore_from_save(save_data)
-            try:
-                pygame.mixer.music.load(os.path.join("lib", "sfx", f"{Config.ambient}_{random.randint(1, Config.ambient_var)}.mp3"))
-                pygame.mixer.music.set_volume(Config.ambient_volume / 100)
-                pygame.mixer.music.play(-1)
-            except Exception:
-                pass
-        elif name == "stats":
-            self.scenes["stats"]._refresh()
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.stop()
-        else:
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.stop()
-
         self.current_scene = self.scenes[name]
+        self.current_scene.on_enter()
 
     def handle_event(self, event):
         self.current_scene.handle_event(event)
